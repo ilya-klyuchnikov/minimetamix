@@ -1,9 +1,8 @@
 package foetus
 
 import body._
+import aux._
 
-// TODO: there is a subtlety with flatMap (see aux.scala)
-// possibly, we need to use flatMap (from aux.scala) everywhere
 object heart {
   // polymorphic matrices
   trait MatrixElement[E] {
@@ -50,6 +49,8 @@ object heart {
 
   type ExtIdent = (String, Ident)
   val emptyExtIdent: ExtIdent = ("", emptyIdent)
+
+  def extIdentToString(name: ExtIdent, i: Ident) = name
 
   sealed trait Relation
   case object RelLess extends Relation {
@@ -128,6 +129,7 @@ object heart {
   case class StaticEnv(stack: FunStack, dependencies: DependenciesImpl.Deps, caller: FunHead)
 
   type Call = (FunHead, Ident, CallMatrix)
+  type Call2 = (FunHead, List[Ident], CallMatrix)
 
   // Call Graph
   trait CallGraphOps {
@@ -211,27 +213,35 @@ object heart {
       val extIdent = extDef._1
       EGen.tupled(extIdent) :: env1
     }
-        
+
     val vs: List[(ExtIdent, Val)] = extDefs.map {case (x, t) => (x, hnf(Clos(t, extEnv)))}
     val funs: List[(FunHead, Val)] = vs.map {case (x, i) => extractFunHead(Nil, x, i)}
     val fstack1 = funs.foldLeft(se.stack){(res, x) => x._1 :: res}
     val part2: List[Call] = tm match {
-      case None => 
+      case None =>
         Nil
-      case Some(t) => 
+      case Some(t) =>
         analyseBody(StaticEnv(fstack1, se.dependencies, se.caller), hnf(Clos(t, extEnv)))
     }
-    val part1 = funs.flatMap{case (caller, v) => 
-      bareFunctionEntry(caller._1, caller._2) :: analyseBody(StaticEnv(fstack1, se.dependencies, caller), v)}
+
+    val part1 = flatMap({x: (FunHead, Val) =>
+      val (caller, v) = x
+      val xx = analyseBody(StaticEnv(fstack1, se.dependencies, caller), v)
+      bareFunctionEntry(caller._1, caller._2) :: xx
+    }, funs)
+    log(s"part1: $part1")
+    log(s"part2: $part2")
     part1 ++ part2
   }
 
   // just collects
-  def analyseBody(se: StaticEnv, v: Val): List[Call] = v match {
+  def analyseBody(se: StaticEnv, v: Val): List[Call] = {
+    log(s"analyseBody: $v >>>")
+    val result = v match {
     case VCtr(c, v) => analyseBody(se, v)
     case VCtrLazy(c, cl) => analyseBody(se, hnf(cl))
-    case VTup(fields) => fields.flatMap { case (_, v) => analyseBody(se, v) }
-    case VTupLazy(cts, env) => cts.flatMap { case (_, v) => analyseBody(se, hnf(Clos(v, env))) }
+    case VTup(fields) => flatMap({ x: (String, Val) => analyseBody(se, x._2) }, fields)
+    case VTupLazy(cts, env) => flatMap({ x: (String, Term) => analyseBody(se, hnf(Clos(x._2, env))) }, cts)
     case VDot(v, _) => analyseBody(se, v)
     case VApp(v, clos) => analyseApp(se, v, List(clos))
     case VCase(v, pats, env) => analyseCases(se, v, pats, env)
@@ -240,12 +250,15 @@ object heart {
     case VDef(clos) => Nil
     case VLam(x, clos) => analyseBody(se, hnf(clos))
   }
+    log(s"result: $result")
+    result
+  }
 
   def analyseCases0(f: (StaticEnv, Val) => List[Call], se: StaticEnv, v: Val, pats: List[Pat], env: Env): List[Call] = v match {
     case VGen(x, id) =>
-      pats.flatMap(analyseCase0(f, se, env, id, _))
+      flatMap(analyseCase0(f, se, env, id, _: Pat), pats)
     case v =>
-      aux.flatMap0(analyseBody(se, v), analyseCaseNoDep0(f, se, env, _: Pat), pats)
+      flatMap0(analyseBody(se, v), analyseCaseNoDep0(f, se, env, _: Pat), pats)
   }
 
   def analyseCase0(f: (StaticEnv, Val) => List[Call], se: StaticEnv, env: Env, id: Ident, pat: Pat): List[Call] = {
@@ -264,7 +277,8 @@ object heart {
 
   def analyseApp(se: StaticEnv, v: Val, args: List[Clos]): List[Call] = v match {
     case VApp(v, cl) => analyseApp(se, v, cl :: args)
-    case VGen(x, i) => args.map(hnf).flatMap(analyseBody(se, _))
+    case VGen(x, i) => analyseCall(se, i, args)
+    case VDef(_) => flatMap(analyseBody(se, _: Val), args.map(hnf))
     case VCase(v, pats, env) => analyseCases0({ (se1, v1) => analyseApp(se1, v1, args) }, se, v, pats, env)
     case VLam(x, clos) =>
       val (cl :: args1) = args
@@ -274,7 +288,7 @@ object heart {
 
   def analyseCall(se: StaticEnv, g: Ident, args: List[Clos]): List[Call] = {
     val vs = args.map(hnf)
-    aux.flatMap0(List((se.caller, g, buildCallMat(se.caller._2, se.dependencies, vs))), analyseBody(se, _: Val), vs)
+    flatMap0(List((se.caller, g, buildCallMat(se.caller._2, se.dependencies, vs))), analyseBody(se, _: Val), vs)
   }
 
   def buildCallMat(pars: List[Ident], deps: DependenciesImpl.Deps, vals: List[Val]): CallMatrix = vals match {
@@ -289,7 +303,7 @@ object heart {
     case _ => RelUnknown
   }
 
-  def analyseDefs(se: StaticEnv, env: Env, defs: Defs) =
+  def analyseDefs(se: StaticEnv, env: Env, defs: Defs): List[Call] =
     analyseLet0(se, env, defs, None)
 
   val emptyStaticEnv: StaticEnv =

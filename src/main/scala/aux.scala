@@ -2,6 +2,8 @@ package foetus
 
 object aux {
 
+  val debug = false
+
   def variant(x: String, ys: List[String]): String = {
     def var1(x: String, ys: List[String]): String = ys match {
       case Nil => x
@@ -31,4 +33,10 @@ object aux {
 
   def upto(l: Int, u: Int): List[Int] =
     if (l >= u) Nil else l :: upto(l + 1, u)
+
+  def log(s: String) {
+    if (debug) {
+      println(s)
+    }
+  }
 }
