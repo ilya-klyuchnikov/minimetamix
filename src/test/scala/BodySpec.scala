@@ -40,7 +40,7 @@ class BodySpec extends org.scalatest.FunSpec {
         })))
 
   def eval(bind: (String, Term), goal: Term): Val =
-    nf(Clos(TLet(List(bind), goal), List()))
+    eagerNF(Clos(TLet(List(bind), goal), Env()))
 
   describe("evaluator") {
     it("zero") {
