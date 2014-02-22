@@ -1,27 +1,34 @@
 package foetus.test
 
-class HeartSpec extends org.scalatest.FunSpec {
-  import foetus.body._
+import org.scalatest._
+
+class HeartSpec extends FunSpec with Matchers {
   import foetus.heart._
   import foetus.parser._
 
   describe("case1") {
     val defs = parseDefs {
       sealed trait Nat
-      val id: Nat => Nat = {x => x}
+      case class Z() extends Nat
+      case class S(pred: Nat) extends Nat
+      def f(x: Nat): Nat = x match {
+        case Z() => Z()
+        case S(pred) => S(f(pred))
+      }
+      def g(x: Nat): Nat =
+        g(x)
+      def h(x: Nat): Nat =
+        h(S(x))
     }
 
-    val calls = analyseDefs(emptyStaticEnv, Env(), defs)
-    println(calls)
-  }
-
-  describe("case2") {
-    val defs = parseDefs {
-      sealed trait Nat
-      val id: Nat => Nat = {x => id(x)}
+    analyseDefs(defs) should equal { List(
+      Call("f", "f", List(List(RelLess))),
+      Call("g", "g", List(List(RelEqual))),
+      Call("h", "h", List(List(RelUnknown)))
+    )
     }
 
-    val calls = analyseDefs(emptyStaticEnv, Env(), defs)
-    println(calls)
   }
+
 }
+
