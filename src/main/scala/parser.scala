@@ -1,155 +1,119 @@
 package foetus
 
-import language.implicitConversions
+import scala.language.implicitConversions
 import scala.language.experimental.macros
-
 import scala.reflect.macros._
+
 import body._
 
 object parser {
-  def parseDefs(expr: Any): List[(String, Term)] = macro parseDefsImpl
+  def parseDefs(expr: Any): List[Def] = macro parseDefsImpl
 
-  def parseDefsImpl(c: Context)(expr: c.Expr[Any]): c.Expr[List[(String, Term)]] = {
-    val parser = new parser[c.type](c, debug = false)
-    parser.parseBlock(expr.tree)
-  }
-}
+  def parseDefsImpl(c: Context)(expr: c.Expr[Any]): c.Expr[List[Def]] = {
+    import c.universe._
 
-class parser[C <: Context](val c: C, debug: Boolean) {
-  import c.universe._
+    object Name {
+      def unapply(name: Name): Option[String] = Some(name.decoded)
+    }
 
-  private implicit class TreeHelper(tree: Tree) {
-    def raw: String = showRaw(tree)
-  }
+    def trim(s: String) = s.split("\n").toList match {
+      case s1 :: Nil => s1
+      case s1 :: ss => s"$s1..."
+    }
 
-  private object Name {
-    def unapply(name: Name): Option[String] = Some(name.decoded)
-  }
-
-  private def trim(s: String) = s.split("\n").toList match {
-    case s1 :: Nil => s1
-    case s1 :: ss => s"$s1..."
-  }
-
-  private def stringLit(s: String): Expr[String] =
-    c.Expr[String](Literal(Constant(s)))
-
-  private def parseTree(tree: Tree): Expr[Term] = {
-    //println()
-    //println(s"-- parsing $tree")
-    //println(s"++ parsing ${tree.raw}")
-    tree match {
-      case Function(List(param), body) =>
-        reify{ TLam(stringLit(param.name.decoded).splice, parseTree(body).splice) }
-      case Select(from, field) =>
-        reify{ TDot(parseTree(from).splice, stringLit(field.decoded).splice) }
-      case Match(selector, cases) =>
-        reify{ TCase(parseTree(selector).splice, parseCaseDefs(cases).splice) }
-      // `v`
-      case Ident(name) =>
-        reify{ TVar(stringLit(name.decoded).splice) }
-      // zero-arg constructor like `Z()`
-      case Apply(Select(Ident(Name(ctrName)), Name("apply")), List()) =>
-        reify{ TCtr(stringLit(ctrName).splice, TTup(List())) }
-      // tuple-apply like Tuple2(x, y), Tuple2(x, y, z)
-      case Apply(Select(Ident(Name(ctrName)), Name("apply")), List(Apply(TypeApply(_), tupleArgs))) =>
-        reify{ TCtr(stringLit(ctrName).splice, TTup(parseTupleArgs(1, tupleArgs).splice)) }
-      // one-arg constructor
-      case Apply(Select(Ident(Name(ctrName)), Name("apply")), List(arg)) if ctrName(0).isUpper =>
-        reify{ TCtr(stringLit(ctrName).splice, parseTree(arg).splice) }
-      // application of higher-order function
-      case Apply(Select(t, Name("apply")), List(arg)) =>
-        reify{ TApp(parseTree(t).splice, parseTree(arg).splice) }
-      // all calls are curried so far `f a`
-      case Apply(operator, List(operand)) =>
-        reify{ TApp(parseTree(operator).splice, parseTree(operand).splice) }
-      case Block(defs, body) =>
-        reify{ TLet(parseDefs(defs).splice, parseTree(body).splice) }
+    def parseTree(tree: Tree): Term = tree match {
+      // x | Ident(newTermName("x"))
+      case Ident(Name(name)) =>
+        TVar(name)
+      // Z.apply()
+      case Apply(Select(Ident(Name(ctrName)), Name("apply")), args) =>
+        TCtr(ctrName, args.map(parseTree))
+      // Cons.apply[A](x, xs1) |
+      case Apply(TypeApply(Select(Ident(Name(ctrName)), Name("apply")), tpParams), args) =>
+        TCtr(ctrName, args.map(parseTree))
+      // natid(pred)
+      case Apply(Ident(Name(name)), args) =>
+        TApp(name, args.map(parseTree))
+      // listId[A](xs1)
+      case Apply(TypeApply(Ident(Name(ctrName)), _), args) =>
+        TApp(ctrName, args.map(parseTree))
       case x =>
         //println(tree)
-        sys.error(s"UNKNOWN: ${tree.raw}")
-    }}
-
-  private def parseCaseDef(caze: CaseDef): Expr[Pat] = {
-    //println(caze.pat)
-    //println(caze.pat.raw)
-    caze.pat match {
-      case Apply(ctr: TypeTree, List()) =>
-        //println(ctr.raw)
-        ctr.original match {
-          case Ident(name) =>
-            reify{ (stringLit(name.decoded).splice, ("_", parseTree(caze.body).splice)) }
-        }
-      case Apply(ctr: TypeTree, List(Bind(bname, _))) =>
-        //println(ctr.raw)
-        ctr.original match {
-          case Ident(name) =>
-            reify{ (stringLit(name.decoded).splice, (stringLit(bname.decoded).splice, parseTree(caze.body).splice)) }
-        }
-      // wilcard??
-      case Apply(ctr: TypeTree, List(Ident(_))) =>
-        //println(ctr.raw)
-        ctr.original match {
-          case Ident(name) =>
-            reify{ (stringLit(name.decoded).splice, ("_", parseTree(caze.body).splice)) }
-        }
-      case x =>
-        //println(caze.pat)
-        sys.error(s"UNKNOWN: ${caze.pat.raw}")
+        sys.error(s"UNKNOWN: ${showRaw(tree)}")
     }
+
+    def parseCaseDef(caze: CaseDef): (Pat, Term) = caze.pat match {
+      case Apply(ctr: TypeTree, bs) =>
+        val Ident(Name(name)) = ctr.original
+        (Pat(name, bs.map {case Bind(Name(n), _) => n}), parseTree(caze.body))
+      case x =>
+        sys.error(s"UNKNOWN: ${showRaw(caze.pat)}")
+    }
+
+    def parseRHS(name: String, params: List[String], rhs: Tree): List[Def] = rhs match {
+      // TODO - check that selector is the first variable
+      case Match(Ident(_), cases) =>
+        for { c <- cases; (pat, body) = parseCaseDef(c) } yield GDef(name, pat, params.tail, body)
+      case _ =>
+        List(FDef(name, params, parseTree(rhs)))
+    }
+
+    def parseDef(name: String, vparamss: List[List[ValDef]], body: Tree): List[Def] = vparamss match {
+      case params :: Nil =>
+        parseRHS(name, params.map{_.name.decoded}, body)
+      case x =>
+        sys.error("curried functions are not supported in SLL")
+    }
+
+    def parseStmt(tree: Tree): List[Def] = tree match {
+      case DefDef(modifiers, name, typeParams, params, returnType, body) =>
+        parseDef(name.decoded, params, body)
+      case x =>
+        //println(s"WARNING ignoring unsupported definition: `${trim(tree.toString())}`")
+        Nil
+    }
+
+    def parseStmts(stmts: List[Tree]): List[Def] =
+      stmts.flatMap(parseStmt)
+
+    def parseBlock(tree: Tree): c.Expr[List[Def]] =  tree match {
+      case Block(stmts, _) =>
+        val defs = parseStmts(stmts)
+        reify(qListDef(defs.map(d => qDef(d))).splice)
+    }
+
+    def qs(s: String): Expr[String] =
+      c.Expr[String](Literal(Constant(s)))
+
+    def qListString(xs: List[Expr[String]]): Expr[List[String]] =
+      xs.foldRight(reify{Nil: List[String]}){ (x, y) => reify{x.splice :: y.splice}}
+
+    def qListDef(xs: List[Expr[Def]]): Expr[List[Def]] =
+      xs.foldRight(reify{Nil: List[Def]}){ (x, y) => reify{x.splice :: y.splice}}
+
+    def qListTerm(xs: List[Expr[Term]]): Expr[List[Term]] =
+      xs.foldRight(reify{Nil: List[Term]}){ (x, y) => reify{x.splice :: y.splice}}
+
+    def qTerm(t: Term): Expr[Term] = t match {
+      case TVar(n) =>
+        reify{ TVar(qs(n).splice) }
+      case TCtr(n, args) =>
+        reify{ TCtr(qs(n).splice, qListTerm(args.map(t => qTerm(t))).splice ) }
+      case TApp(n, args) =>
+        reify{ TApp(qs(n).splice, qListTerm(args.map(t => qTerm(t))).splice ) }
+    }
+
+    def qDef(d: Def): Expr[Def] = d match {
+      case FDef(n, ps, body) =>
+        reify{ FDef(qs(n).splice, qListString(ps.map({ s => qs(s) })).splice , qTerm(body).splice )}
+      case GDef(n, Pat(cn, ps1), ps2, body) =>
+        reify{GDef(
+          qs(n).splice,
+          Pat(qs(cn).splice, qListString(ps1.map({ s => qs(s) })).splice),
+          qListString(ps2.map({ s => qs(s) })).splice,
+          qTerm(body).splice)}
+    }
+
+    parseBlock(expr.tree)
   }
-
-  private def parseCaseDefs(cases: List[CaseDef]): Expr[List[Pat]] = cases match {
-    case Nil =>
-      reify(Nil)
-    case caze::cazes =>
-      reify{ parseCaseDef(caze).splice :: parseCaseDefs(cazes).splice }
-
-  }
-
-  private def parseTupleArgs(i: Int, args: List[Tree]): Expr[List[(String, Term)]] = args match {
-    case Nil =>
-      reify{ Nil }
-    case x :: xs =>
-      reify{ parseTupleArg(i, x).splice :: parseTupleArgs(i + 1, xs).splice }
-  }
-
-  private def parseTupleArg(i: Int, arg: Tree): Expr[(String, Term)] =
-    reify{ (stringLit(s"_$i").splice, parseTree(arg).splice) }
-
-  private def parseDef0(vparamss: List[List[ValDef]], body: Tree): Expr[Term] = vparamss match {
-    case Nil =>
-      parseTree(body)
-    case List(param) :: params =>
-      reify{ TLam(stringLit(param.name.decoded).splice, parseDef0(params, body).splice) }
-  }
-
-  private def parseDef(tree: Tree): Option[Expr[(String, Term)]] = tree match {
-    case DefDef(modifiers, name, typeParams, params, returnType, body) =>
-      Some(reify{ (stringLit(name.decoded).splice, parseDef0(params, body).splice) })
-    case ValDef(modifiers, name, tp, body) =>
-      Some(reify{ (stringLit(name.decoded).splice, parseTree(body).splice) })
-    // type definition
-    case x =>
-      //println(s"WARNING ignoring unsupported definition: `${trim(tree.toString())}`")
-      None
-  }
-
-  private def parseDefs(stmts: List[Tree]): Expr[List[(String, Term)]] = stmts match {
-    case Nil =>
-      reify{ Nil }
-    case d :: ds =>
-      parseDef(d) match {
-        case None =>
-          parseDefs(ds)
-        case Some(expr) =>
-          reify{ expr.splice :: parseDefs(ds).splice }
-      }
-  }
-
-  def parseBlock(tree: Tree): c.Expr[List[(String, Term)]] =  tree match {
-    case Block(defs, _) =>
-      parseDefs(defs)
-  }
-
 }

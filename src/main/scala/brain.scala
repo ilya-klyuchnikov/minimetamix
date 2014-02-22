@@ -1,10 +1,15 @@
 package foetus
 
-import aux._
 import heart._
 import body._
 
 object brain {
+
+  val debug = false
+
+  def log(msg: String) {
+    if (debug) println(msg)
+  }
 
   type CallGraph = List[Call]
   val emptyCallGraph: CallGraph = Nil
@@ -60,7 +65,7 @@ object brain {
 
     h_fs.foldLeft(List[Call]()) { (doneList, x) =>
       val Call(caller2, callee2, callMat2) = x
-      if (caller2.id == callee1.id)
+      if (caller2 == callee1)
         Call(caller1, callee2, CallMatrixOps.mult(callMat2, callMat1)) :: doneList
       else
         doneList
@@ -85,7 +90,7 @@ object brain {
   def circle(graph: CallGraph, f: Ident): List[CallMatrix] = {
     val comp = complete(graph)
     comp.foldLeft(List[CallMatrix]()) { (doneList, call) =>
-      if (call.caller.id == f && call.caller.id == call.callee.id)
+      if (call.caller == f && call.caller == call.callee)
         call.matr :: doneList
       else
         doneList
@@ -100,8 +105,7 @@ object brain {
     case RelEqual :: rels => elimCols(rels, colNo + 1, relMat, foundLess)
   }
 
-  def findOrder(rowIndex: Int, relMat: List[List[Relation]], argNames: List[Int]): List[Int] = {
-    log(s"relMat: $relMat")
+  def findOrder(rowIndex: Int, relMat: List[List[Relation]], argNames: List[Int]): List[Int] =
     relMat match {
       case Nil =>
         Nil
@@ -122,7 +126,7 @@ object brain {
           case x: IndexOutOfBoundsException =>
             throw NoOrder()
         }
-    } }
+    }
 
   def lexicalOrder0(argRels: CallMatrix): Option[List[Int]] = argRels match {
     case Nil =>
@@ -138,27 +142,24 @@ object brain {
   def lexicalOrder(recCalls: CallMatrix): Option[List[Int]] =
     lexicalOrder0(CallMatrixOps.transpose(recCalls))
 
-  def checkDefs(env: Env, defs: Defs): Map[String, Option[List[Int]]] = {
-    val callGraph: CallGraph = analyseDefs(emptyStaticEnv, env, defs)
-    val callers: List[ExtIdent] = callGraph.map(_.caller)
-    log(s"callers: $callers")
-    log(s"callGraph: ${callGraph}")
-    var result = Map[String, Option[List[Int]]]()
-    callers.map({ f =>
-      val matrices: List[CallMatrix] = circle(callGraph, f.id)
+  def checkDefs(defs: List[Def]): List[(String, Option[List[Int]])] = {
+    val callGraph: CallGraph = analyseDefs(defs)
+    log(s"callGraph: $callGraph")
+    val callers: List[String] = defs.map(_.name).distinct
+    callers.map{ f =>
+      val matrices: List[CallMatrix] = circle(callGraph, f)
       val recMatrix: CallMatrix = matrices.map(CallMatrixOps.diag)
       val order =lexicalOrder(recMatrix)
 
-      val nameVar = f.name
       order match {
         case None =>
-          log(s"${nameVar} FAILS termination check")
+          log(s"${f} FAILS termination check")
         case Some(Nil) =>
-          log(s"${nameVar} PASSES termination check")
+          log(s"${f} PASSES termination check")
         case Some(order) =>
-          log(s"${nameVar} PASSES termination check (by lexical order ${order.mkString(", ")})")
+          log(s"${f} PASSES termination check (by lexical order ${order.mkString(", ")})")
       }
-      f.name -> order
-    }).toMap
+      f -> order
+    }
   }
 }
