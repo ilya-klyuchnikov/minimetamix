@@ -6,22 +6,27 @@ import org.scalatest._
 
 class ParserSpec extends FunSpec with Matchers {
 
-  implicit def stringToVar(s: String) = TVar(s)
+  implicit def stringToVar(s: String) = Var(s)
 
   describe("parsing subset of Scala into SLL") {
 
     it("id") {
       parseDefs {
+
         sealed trait Nat
         def id(x: Nat): Nat = x
+
       } should equal {
-        List(FDef("id", List("x"),
-          TVar("x")))
+
+        List(
+          Def("id", List("x"), Var("x")))
+
       }
     }
 
     it("natid") {
       parseDefs {
+
         sealed trait Nat
         case class Z() extends Nat
         case class S(pred: Nat) extends Nat
@@ -29,18 +34,24 @@ class ParserSpec extends FunSpec with Matchers {
           case Z() => Z()
           case S(pred) => S(natid(pred))
         }
+
       } should equal {
+
         List(
-          GDef("natid", Pat("Z", List()), List(),
-            TCtr("Z", List())),
-          GDef("natid", Pat("S", List("pred")), List(),
-            TCtr("S", List(TApp("natid", List(TVar("pred"))))))
-        )
+          Def("natid", List("x"),
+            Case(Var("x") ,
+              List(
+                Branch(Pat("Z", List()), Ctr("Z", List())),
+                Branch(Pat("S", List("pred")), Ctr("S", List(App("natid", List(Var("pred"))))))
+              ))))
+
       }
     }
 
+
     it("add") {
       parseDefs {
+
         sealed trait Nat
         case class Z() extends Nat
         case class S(pred: Nat) extends Nat
@@ -51,18 +62,21 @@ class ParserSpec extends FunSpec with Matchers {
         }
 
       } should equal {
+
         List(
-          GDef("add", Pat("Z", List()),List("y"),
-            TVar("y")),
-          GDef("add", Pat("S", List("x1")), List("y"),
-            TCtr("S", List(TApp("add", List(TVar("x1"), TVar("y"))))))
-        )
+          Def("add", List("x", "y"),
+            Case(Var("x") ,
+              List(
+                Branch(Pat("Z", List()), Var("y")),
+                Branch(Pat("S", List("x1")), Ctr("S", List(App("add", List(Var("x1"), Var("y"))))))
+              ))))
 
       }
     }
 
     it("append") {
       parseDefs {
+
         sealed trait List[A]
         case class Nil[A]() extends List[A]
         case class Cons[A](head: A, tail: List[A]) extends List[A]
@@ -73,12 +87,15 @@ class ParserSpec extends FunSpec with Matchers {
         }
 
       } should equal {
+
         List(
-          GDef("append", Pat("Nil",List()), List("ys"),
-            TVar("ys")),
-          GDef("append", Pat("Cons", List("x1", "xs1")), List("ys"),
-            TCtr("Cons", List(TVar("x1"), TApp("append", List(TVar("xs1"), TVar("ys"))))))
-        )
+          Def("append", List("xs", "ys"),
+            Case(Var("xs") ,
+              List(
+                Branch(Pat("Nil", List()), Var("ys")),
+                Branch(Pat("Cons", List("x1", "xs1")), Ctr("Cons", List(Var("x1"), App("append", List(Var("xs1"), Var("ys"))))))
+              ))))
+
       }
     }
   }

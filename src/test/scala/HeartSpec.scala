@@ -3,10 +3,11 @@ package foetus.test
 import org.scalatest._
 
 class HeartSpec extends FunSpec with Matchers {
+  import foetus.body._
   import foetus.heart._
   import foetus.parser._
 
-  describe("case1") {
+  describe("f, g, h") {
     val defs = parseDefs {
       sealed trait Nat
       case class Z() extends Nat

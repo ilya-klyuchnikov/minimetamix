@@ -22,45 +22,33 @@ object parser {
     }
 
     def parseTree(tree: Tree): Term = tree match {
-      // x | Ident(newTermName("x"))
       case Ident(Name(name)) =>
-        TVar(name)
-      // Z.apply()
+        Var(name)
+      case Match(selector, cases) =>
+        Case(parseTree(selector), cases.map(parseCaseDef))
       case Apply(Select(Ident(Name(ctrName)), Name("apply")), args) =>
-        TCtr(ctrName, args.map(parseTree))
-      // Cons.apply[A](x, xs1) |
+        Ctr(ctrName, args.map(parseTree))
       case Apply(TypeApply(Select(Ident(Name(ctrName)), Name("apply")), tpParams), args) =>
-        TCtr(ctrName, args.map(parseTree))
-      // natid(pred)
+        Ctr(ctrName, args.map(parseTree))
       case Apply(Ident(Name(name)), args) =>
-        TApp(name, args.map(parseTree))
-      // listId[A](xs1)
+        App(name, args.map(parseTree))
       case Apply(TypeApply(Ident(Name(ctrName)), _), args) =>
-        TApp(ctrName, args.map(parseTree))
+        App(ctrName, args.map(parseTree))
       case x =>
-        //println(tree)
         sys.error(s"UNKNOWN: ${showRaw(tree)}")
     }
 
-    def parseCaseDef(caze: CaseDef): (Pat, Term) = caze.pat match {
+    def parseCaseDef(caze: CaseDef): Branch = caze.pat match {
       case Apply(ctr: TypeTree, bs) =>
         val Ident(Name(name)) = ctr.original
-        (Pat(name, bs.map {case Bind(Name(n), _) => n}), parseTree(caze.body))
+        Branch(Pat(name, bs.map {case Bind(Name(n), _) => n}), parseTree(caze.body))
       case x =>
         sys.error(s"UNKNOWN: ${showRaw(caze.pat)}")
     }
 
-    def parseRHS(name: String, params: List[String], rhs: Tree): List[Def] = rhs match {
-      // TODO - check that selector is the first variable
-      case Match(Ident(_), cases) =>
-        for { c <- cases; (pat, body) = parseCaseDef(c) } yield GDef(name, pat, params.tail, body)
-      case _ =>
-        List(FDef(name, params, parseTree(rhs)))
-    }
-
     def parseDef(name: String, vparamss: List[List[ValDef]], body: Tree): List[Def] = vparamss match {
       case params :: Nil =>
-        parseRHS(name, params.map{_.name.decoded}, body)
+        List(Def(name, params.map{_.name.decoded}, parseTree(body)))
       case x =>
         sys.error("curried functions are not supported in SLL")
     }
@@ -94,24 +82,40 @@ object parser {
     def qListTerm(xs: List[Expr[Term]]): Expr[List[Term]] =
       xs.foldRight(reify{Nil: List[Term]}){ (x, y) => reify{x.splice :: y.splice}}
 
+    def qListBranch(xs: List[Expr[Branch]]): Expr[List[Branch]] =
+      xs.foldRight(reify{Nil: List[Branch]}){ (x, y) => reify{x.splice :: y.splice}}
+
     def qTerm(t: Term): Expr[Term] = t match {
-      case TVar(n) =>
-        reify{ TVar(qs(n).splice) }
-      case TCtr(n, args) =>
-        reify{ TCtr(qs(n).splice, qListTerm(args.map(t => qTerm(t))).splice ) }
-      case TApp(n, args) =>
-        reify{ TApp(qs(n).splice, qListTerm(args.map(t => qTerm(t))).splice ) }
+      case Var(n) =>
+        reify {
+          Var(qs(n).splice)
+        }
+      case Ctr(n, args) =>
+        reify {
+          Ctr(qs(n).splice, qListTerm(args.map(t => qTerm(t))).splice )
+        }
+      case App(n, args) =>
+        reify {
+          App(qs(n).splice, qListTerm(args.map(t => qTerm(t))).splice )
+        }
+      case Case(sel, branches) =>
+        reify {
+          Case(qTerm(sel).splice, qListBranch(branches.map(b => qBranch(b))).splice)
+        }
+    }
+
+    def qBranch(b: Branch): Expr[Branch] = b match {
+      case Branch(Pat(n, ps), body) =>
+        reify {
+          Branch(Pat(qs(n).splice, qListString(ps.map({ s => qs(s) })).splice), qTerm(body).splice)
+        }
     }
 
     def qDef(d: Def): Expr[Def] = d match {
-      case FDef(n, ps, body) =>
-        reify{ FDef(qs(n).splice, qListString(ps.map({ s => qs(s) })).splice , qTerm(body).splice )}
-      case GDef(n, Pat(cn, ps1), ps2, body) =>
-        reify{GDef(
-          qs(n).splice,
-          Pat(qs(cn).splice, qListString(ps1.map({ s => qs(s) })).splice),
-          qListString(ps2.map({ s => qs(s) })).splice,
-          qTerm(body).splice)}
+      case Def(n, ps, body) =>
+        reify {
+          Def(qs(n).splice, qListString(ps.map({ s => qs(s) })).splice , qTerm(body).splice)
+        }
     }
 
     parseBlock(expr.tree)
