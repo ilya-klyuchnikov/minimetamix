@@ -1,13 +1,12 @@
 package foetus.test
 
-import org.scalatest._
+import foetus.ast._
+import foetus.calls._
+import foetus.parser._
 
-class HeartSpec extends FunSpec with Matchers {
-  import foetus.body._
-  import foetus.heart._
-  import foetus.parser._
+class CallsSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
 
-  describe("f, g, h") {
+  describe("f, g, h, id, k") {
     val defs = parseDefs {
       sealed trait Nat
       case class Z() extends Nat
@@ -20,15 +19,22 @@ class HeartSpec extends FunSpec with Matchers {
         g(x)
       def h(x: Nat): Nat =
         h(S(x))
+      def id(x: Nat): Nat =
+        x
+      def k(x: Nat): Nat = id(x) match {
+        case Z() => Z()
+        case S(pred) => k(pred)
+      }
     }
 
     analyseDefs(defs) should equal { List(
       Call("f", "f", List(List(RelLess))),
       Call("g", "g", List(List(RelEqual))),
-      Call("h", "h", List(List(RelUnknown)))
+      Call("h", "h", List(List(RelUnknown))),
+      Call("k", "id", List(List(RelEqual))),
+      Call("k", "k", List(List(RelUnknown)))
     )
     }
-
   }
 
 }

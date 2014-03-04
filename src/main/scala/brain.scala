@@ -1,8 +1,7 @@
 package foetus
 
 import ast._
-import heart._
-import body._
+import calls._
 
 object brain {
 
@@ -88,11 +87,11 @@ object brain {
     complete0(calls)
   }
 
-  def circle(graph: CallGraph, f: Ident): List[CallMatrix] = {
+  def circle(graph: CallGraph, f: String): List[CallMatrix] = {
     val comp = complete(graph)
     comp.foldLeft(List[CallMatrix]()) { (doneList, call) =>
       if (call.caller == f && call.caller == call.callee)
-        call.matr :: doneList
+        call.callMatrix :: doneList
       else
         doneList
     }
