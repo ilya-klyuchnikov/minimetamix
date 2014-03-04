@@ -1,28 +1,8 @@
 package foetus
 
+import ast._
+
 object body {
-  case class Def(name: String, params: List[String], body: Term)
-
-  sealed trait Term {
-    val size: Int
-  }
-  case class Var(n : String) extends Term {
-    val size = 1
-  }
-  case class App(h : String, args : List[Term]) extends Term {
-    val size = 1 + args.map(_.size).sum
-  }
-  case class Ctr(name : String, args : List[Term]) extends Term {
-    val size = 1 + args.map(_.size).sum
-  }
-  case class Case(selector: Term, branches: List[Branch]) extends Term {
-    val size = 1 + selector.size + branches.map(_.size).sum
-  }
-  case class Branch(pat: Pat, body: Term) {
-    val size = 1 + pat.params.size + body.size
-  }
-  case class Pat(name: String, params: List[String])
-
   sealed trait Relation
   case object RelLess extends Relation {
     override def toString = "<"
@@ -53,7 +33,7 @@ object body {
     case _ => false
   }
 
-  implicit class TermOps(t: Term) {
+  implicit class TermOpsExtra(t: Term) {
     def <=> (t2: Term): Relation =
       if (he(t, t2)) {
         if (t.size < t2.size) RelLess else RelEqual

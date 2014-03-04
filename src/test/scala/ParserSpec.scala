@@ -1,6 +1,6 @@
 package foetus.test
 
-import foetus.body._
+import foetus.ast._
 import foetus.parser._
 import org.scalatest._
 
