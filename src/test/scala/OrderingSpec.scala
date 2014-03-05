@@ -2,14 +2,14 @@ package foetus.test
 
 import org.scalatest._
 
-class BrainSpec extends FunSpec with Matchers {
-  import foetus.brain._
+class OrderingSpec extends FunSpec with Matchers {
+  import foetus.ordering._
   import foetus.parser._
 
   describe("termination checker") {
 
     it ("add, mult, ...") {
-      val order = checkDefs(parseDefs {
+      val order = orderDefs(parseDefs {
 
         sealed trait Nat
         case class Z() extends Nat
@@ -146,7 +146,7 @@ class BrainSpec extends FunSpec with Matchers {
     }
 
     it("ack with aux function") {
-      val order = checkDefs(parseDefs {
+      val order = orderDefs(parseDefs {
         sealed trait Nat
         case class Z() extends Nat
         case class S(pred: Nat) extends Nat
@@ -172,7 +172,7 @@ class BrainSpec extends FunSpec with Matchers {
     }
 
     it("direct ack") {
-      val order = checkDefs(parseDefs {
+      val order = orderDefs(parseDefs {
         sealed trait Nat
         case class Z() extends Nat
         case class S(pred: Nat) extends Nat
@@ -195,7 +195,7 @@ class BrainSpec extends FunSpec with Matchers {
     }
 
     it("fib") {
-      val order = checkDefs(parseDefs{
+      val order = orderDefs(parseDefs{
         sealed trait Nat
         case class Z() extends Nat
         case class S(pred: Nat) extends Nat

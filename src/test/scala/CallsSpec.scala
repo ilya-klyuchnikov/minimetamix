@@ -27,7 +27,7 @@ class CallsSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
       }
     }
 
-    analyseDefs(defs) should equal { List(
+    callGraph(defs) should equal { List(
       Call("f", "f", List(List(RelLess))),
       Call("g", "g", List(List(RelEqual))),
       Call("h", "h", List(List(RelUnknown))),

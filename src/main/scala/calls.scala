@@ -3,6 +3,7 @@ package foetus
 import ast._
 
 object calls {
+  type CallGraph = List[Call]
   type CallMatrix = List[List[Relation]]
 
   case class Call(caller: String, callee: String, callMatrix: CallMatrix) {
@@ -15,36 +16,35 @@ object calls {
    * @param defs definitions to analyse
    * @return a list of calls f->g (for each call of g inside f)
    */
-  def analyseDefs(defs: List[Def]): List[Call] = defs.flatMap {
+  def callGraph(defs: List[Def]): CallGraph = defs.flatMap {
     case Def(name, params, body) =>
-      analyseTerm(name, params.map(Var), body)
+      collectCalls(name, params.map(Var), body)
   }
 
-  private def analyseTerm(caller: String, params: List[Term], t: Term): List[Call] = t match {
+  private def collectCalls(caller: String, params: List[Term], t: Term): List[Call] = t match {
     case Var(_) =>
       Nil
     case App(callee, args) =>
-      val callMatrix = buildCallMatrix(params, args)
-      val call = Call(caller, callee, callMatrix)
-      call :: args.flatMap(analyseTerm(caller, params, _))
+      val call = Call(caller, callee, callMatrix(params, args))
+      call :: args.flatMap(collectCalls(caller, params, _))
     case Ctr(c, args) =>
-      args.flatMap(analyseTerm(caller, params, _))
+      args.flatMap(collectCalls(caller, params, _))
     // propagation of positive information
     case Case(Var(vn), bs) =>
       bs.flatMap { case Branch(Pat(cn, xs), body) =>
         val params1 = params map{ _ / (vn, Ctr(cn, xs.map(Var))) }
         val body1 = body / (vn, Ctr(cn, xs.map(Var)))
-        analyseTerm(caller, params1, body1)
+        collectCalls(caller, params1, body1)
       }
     // no propagation =>
     // a link from function parameter -> pattern var is lost
     case Case(sel, bs) =>
-      analyseTerm(caller, params, sel) ++ bs.flatMap(b => analyseTerm(caller, params, b.body))
+      collectCalls(caller, params, sel) ++ bs.flatMap(b => collectCalls(caller, params, b.body))
   }
 
   // callee params - should be terms
   // args - should be terms
-  private def buildCallMatrix(callerParams: List[Term], calleeArgs: List[Term]): CallMatrix =
+  private def callMatrix(callerParams: List[Term], calleeArgs: List[Term]): CallMatrix =
     calleeArgs.map( arg => callerParams.map (param => arg <=> param) )
 
   sealed trait Relation
