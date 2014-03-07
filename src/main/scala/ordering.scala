@@ -13,19 +13,14 @@ object ordering {
 
   private object Elem {
     val zero: Relation = RelUnknown
-    val one: Relation = RelEqual
     def add(r1: Relation, r2: Relation): Relation = (r1, r2) match {
-      case (RelLess, _) => RelLess
-      case (_, RelLess) => RelLess
-      case (RelEqual, _) => RelEqual
-      case (RelUnknown, RelEqual) => RelEqual
+      case (RelLess, _)  | (_, RelLess)  => RelLess
+      case (RelEqual, _) | (_, RelEqual) => RelEqual
       case (RelUnknown, RelUnknown) => RelUnknown
     }
     def mult(r1: Relation, r2: Relation): Relation = (r1, r2) match {
-      case (RelUnknown, _) => RelUnknown
-      case (_, RelUnknown) => RelUnknown
-      case (RelLess, _) => RelLess
-      case (_, RelLess) => RelLess
+      case (RelUnknown, _) | (_, RelUnknown)=> RelUnknown
+      case (RelLess, _)    | (_, RelLess)  => RelLess
       case (RelEqual, RelEqual) => RelEqual
     }
   }
@@ -33,18 +28,10 @@ object ordering {
   object CallMatrixOps {
     type Row = List[Relation]
 
-    def transpose(m: CallMatrix): CallMatrix = m match {
-      case Nil => Nil
-      case Nil :: _ => Nil
-      case rows => rows.map(_.head) :: transpose(rows.map(_.tail))
-    }
-
-    private def mult0(rows: CallMatrix, cols: CallMatrix): CallMatrix =
-      rows.map { row => cols.map { col => (row, col).zipped.map(Elem.mult).foldLeft(Elem.zero)(Elem.add) } }
-
-    def mult(m1: CallMatrix, m2: CallMatrix): CallMatrix = {
-      mult0(m1, transpose(m2))
-    }
+    def mult(m1: CallMatrix, m2: CallMatrix): CallMatrix =
+      for {row <- m1} yield
+        for {col <- m2.transpose} yield
+          (row, col).zipped.map(Elem.mult).foldLeft(Elem.zero)(Elem.add)
 
     def diag(m: CallMatrix) =
       for (i <- m.indices.toList) yield m(i)(i)
