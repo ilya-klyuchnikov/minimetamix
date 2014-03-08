@@ -12,16 +12,16 @@ object ordering {
   }
 
   private object Elem {
-    val zero: Relation = RelUnknown
+    val zero: Relation = `?`
     def add(r1: Relation, r2: Relation): Relation = (r1, r2) match {
-      case (RelLess, _)  | (_, RelLess)  => RelLess
-      case (RelEqual, _) | (_, RelEqual) => RelEqual
-      case (RelUnknown, RelUnknown) => RelUnknown
+      case (`<`, _) | (_, `<`) => `<`
+      case (`=`, _) | (_, `=`) => `=`
+      case (`?`, `?`) => `?`
     }
     def mult(r1: Relation, r2: Relation): Relation = (r1, r2) match {
-      case (RelUnknown, _) | (_, RelUnknown)=> RelUnknown
-      case (RelLess, _)    | (_, RelLess)  => RelLess
-      case (RelEqual, RelEqual) => RelEqual
+      case (`?`, _) | (_, `?`)=> `?`
+      case (`<`, _) | (_, `<`)  => `<`
+      case (`=`, `=`) => `=`
     }
   }
 

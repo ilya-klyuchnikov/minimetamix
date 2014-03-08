@@ -4,7 +4,7 @@ import foetus.ast._
 import foetus.calls._
 import foetus.parser._
 
-class CallsSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
+class CallsSpec extends org.scalatest.FunSpec {
 
   describe("f, g, h, id, k") {
     val defs = parseDefs {
@@ -27,15 +27,12 @@ class CallsSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
       }
     }
 
-    callGraph(defs) should equal { List(
-      Call("f", "f", List(List(RelLess))),
-      Call("g", "g", List(List(RelEqual))),
-      Call("h", "h", List(List(RelUnknown))),
-      Call("k", "id", List(List(RelEqual))),
-      Call("k", "k", List(List(RelUnknown)))
-    )
-    }
+    assert(callGraph(defs) === List(
+      Call("f", "f",  List(List(`<`))),
+      Call("g", "g",  List(List(`=`))),
+      Call("h", "h",  List(List(`?`))),
+      Call("k", "id", List(List(`=`))),
+      Call("k", "k",  List(List(`?`)))
+    ))
   }
-
 }
-

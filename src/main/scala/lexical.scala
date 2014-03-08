@@ -18,9 +18,9 @@ object lexical {
       combPerm <- comb.permutations
     } yield combPerm
 
-  private def isDecreasing(xs: List[Relation]): Boolean = xs match {
-    case Nil | RelUnknown :: _ => false
-    case RelLess :: xs1 => true
-    case RelEqual :: xs1 => isDecreasing(xs1)
+  private def isDecreasing(rs: List[Relation]): Boolean = rs match {
+    case Nil | `?` :: _ => false
+    case `<` :: _ => true
+    case `=` :: rs1 => isDecreasing(rs1)
   }
 }

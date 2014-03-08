@@ -48,15 +48,9 @@ object calls {
     calleeArgs.map( arg => callerParams.map (param => arg <=> param) )
 
   sealed trait Relation
-  case object RelLess extends Relation {
-    override def toString = "<"
-  }
-  case object RelEqual extends Relation {
-    override def toString = "="
-  }
-  case object RelUnknown extends Relation {
-    override def toString = "?"
-  }
+  case object `=` extends Relation
+  case object `<` extends Relation
+  case object `?` extends Relation
 
   def he(term1: Term, term2: Term): Boolean =
     heByDiving(term1, term2) || heByCoupling(term1, term2)
@@ -78,12 +72,11 @@ object calls {
   }
 
   implicit class TermOpsExtra(t: Term) {
-    def <=> (t2: Term): Relation =
-      if (he(t, t2)) {
-        if (t.size < t2.size) RelLess else RelEqual
-      } else {
-        RelUnknown
-      }
+    def <=> (t2: Term): Relation = (he(t, t2), t.size < t2.size) match {
+      case (true, true) => `<`
+      case (true, false) => `=`
+      case (false, _) => `?`
+    }
 
     // elementary substitution
     def /(bind: (String, Term)): Term = t match {

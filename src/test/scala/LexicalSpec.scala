@@ -3,49 +3,54 @@ package foetus.test
 import foetus.calls._
 import foetus.lexical._
 
-class LexicalSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
-  val ?? = RelUnknown
-  val == = RelEqual
-  val << = RelLess
+class LexicalSpec extends org.scalatest.FunSpec {
 
   describe("LexicalSpec.scala") {
-    lexicalOrder(List(
-      List(??)
-    )) should equal {None}
+    assert(
+      lexicalOrder(
+        List(
+          List(`?`)
+        )
+      ) === None)
 
-    lexicalOrder(
-      List(
-        List(==)
-      )
-    ) should equal {None}
+    assert(
+      lexicalOrder(
+        List(
+          List(`=`)
+        )
+      ) === None)
 
-    lexicalOrder(
-      List(
-        List(<<)
-      )
-    ) should equal {Some(List(0))}
+    assert(
+      lexicalOrder(
+        List(
+          List(`<`)
+        )
+      ) === Some(List(0)))
 
-    lexicalOrder(
-      List(
-        List(??, <<, ==),
-        List(<<, ==, <<)
-      )
-    ) should equal {Some(List(1, 0))}
+    assert(
+      lexicalOrder(
+        List(
+          List(`?`, `<`, `=`),
+          List(`<`, `=`, `<`)
+        )
+      ) === Some(List(1, 0)))
 
-    lexicalOrder(
-      List(
-        List(??, <<, ==),
-        List(<<, ==, <<),
-        List(??, ==, <<)
-      )
-    ) should equal {Some(List(1, 2))}
+    assert(
+      lexicalOrder(
+        List(
+          List(`?`, `<`, `=`),
+          List(`<`, `=`, `<`),
+          List(`?`, `=`, `<`)
+        )
+      ) === Some(List(1, 2)))
 
-    lexicalOrder(
-      List(
-        List(??, <<, ==, ==),
-        List(<<, ==, ??, ??),
-        List(??, ==, <<, ??)
-      )
-    ) should equal {None}
+    assert(
+      lexicalOrder(
+        List(
+          List(`?`, `<`, `=`, `=`),
+          List(`<`, `=`, `?`, `?`),
+          List(`?`, `=`, `<`, `?`)
+        )
+      ) === None)
   }
 }
