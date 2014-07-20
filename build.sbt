@@ -1,7 +1,7 @@
-scalaVersion := "2.11.0"
+scalaVersion := "2.11.2"
 
 name := "foetus"
 
-libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-reflect" % _ % "provided")
+libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _ % "provided")
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "2.1.3" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.0" % "test"
