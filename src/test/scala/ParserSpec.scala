@@ -1,5 +1,7 @@
 package foetus.test
 
+import scala.language.implicitConversions
+
 import foetus.ast._
 import foetus.parser._
 import org.scalatest._

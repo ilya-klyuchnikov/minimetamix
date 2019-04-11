@@ -35,12 +35,15 @@ object parser {
     }
 
     def parseCaseDef(caze: CaseDef): Branch = caze.pat match {
-      case UnApply(Apply(Select(Ident(Name(name)), _), _), bs) =>
-        Branch(Pat(name, bs.map { case Bind(Name(n), _) => n }), parseTree(caze.body))
-      case UnApply(Apply(TypeApply(Select(Ident(Name(name)), _), _), _), bs) =>
-        Branch(Pat(name, bs.map { case Bind(Name(n), _) => n }), parseTree(caze.body))
+      case Apply(tt:TypeTree, bs) => {
+        Branch(Pat(unname(tt.original), bs.map { case Bind(Name(n), _) => n }), parseTree(caze.body))
+      }
       case x =>
         c.abort(caze.pat.pos, "FOETUS. Unsupported syntax")
+    }
+
+    def unname(t: Tree): String = t match {
+      case Ident(Name(name)) => name
     }
 
     def parseDef(name: String, vparamss: List[List[ValDef]], body: Tree): List[Def] = vparamss match {
