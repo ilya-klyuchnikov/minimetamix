@@ -1,6 +1,6 @@
 package foetus.test
 
-import foetus.ast._
+import foetus.adt._
 import foetus.calls._
 import foetus.parser._
 
@@ -8,9 +8,6 @@ class CallsSpec extends org.scalatest.FunSpec {
 
   describe("f, g, h, id, k") {
     val defs = parseDefs {
-      sealed trait Nat
-      case class Z() extends Nat
-      case class S(pred: Nat) extends Nat
       def f(x: Nat): Nat = x match {
         case Z() => Z()
         case S(pred) => S(f(pred))

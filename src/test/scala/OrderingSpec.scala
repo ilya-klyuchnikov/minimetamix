@@ -1,27 +1,15 @@
 package foetus.test
 
-import org.scalatest._
+import foetus.adt._
+import foetus.ordering._
+import foetus.parser._
 
-class OrderingSpec extends FunSpec with Matchers {
-  import foetus.ordering._
-  import foetus.parser._
+class OrderingSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
 
   describe("termination checker") {
 
     it ("add, mult, ...") {
       val order = orderDefs(parseDefs {
-
-        sealed trait Nat
-        case class Z() extends Nat
-        case class S(pred: Nat) extends Nat
-
-        sealed trait List[A]
-        case class Nil[A]() extends List[A]
-        case class Cons[A](h: A, t: List[A]) extends List[A]
-
-        sealed trait Bool
-        case class True() extends Bool
-        case class False() extends Bool
 
         def id0[A](x: A): A = x
 
@@ -147,10 +135,6 @@ class OrderingSpec extends FunSpec with Matchers {
 
     it("ack with aux function") {
       val order = orderDefs(parseDefs {
-        sealed trait Nat
-        case class Z() extends Nat
-        case class S(pred: Nat) extends Nat
-
         def ack(x: Nat, y: Nat): Nat = x match {
           case Z() => S(y)
           case S(x1) => ack(x1, ack1(y, S(x1)))
@@ -173,10 +157,6 @@ class OrderingSpec extends FunSpec with Matchers {
 
     it("direct ack") {
       val order = orderDefs(parseDefs {
-        sealed trait Nat
-        case class Z() extends Nat
-        case class S(pred: Nat) extends Nat
-
         def ack(x: Nat, y: Nat): Nat = x match {
           case Z() => S(y)
           case S(x1) => y match {
@@ -196,9 +176,6 @@ class OrderingSpec extends FunSpec with Matchers {
 
     it("fib") {
       val order = orderDefs(parseDefs{
-        sealed trait Nat
-        case class Z() extends Nat
-        case class S(pred: Nat) extends Nat
 
         def add(x: Nat, y: Nat): Nat = x match {
           case Z() => y

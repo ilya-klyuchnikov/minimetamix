@@ -22,43 +22,34 @@ object parser {
         Var(name)
       case Match(selector, cases) =>
         Case(parseTree(selector), cases.map(parseCaseDef))
-      case Apply(Select(Ident(Name(ctrName)), Name("apply")), args) =>
-        Ctr(ctrName, args.map(parseTree))
-      case Apply(TypeApply(Select(Ident(Name(ctrName)), Name("apply")), tpParams), args) =>
-        Ctr(ctrName, args.map(parseTree))
+      case Apply(Select(ctr, Name("apply")), args) =>
+        Ctr(unname(ctr), args.map(parseTree))
+      case Apply(TypeApply(Select(ctr, Name("apply")), tpParams), args) =>
+        Ctr(unname(ctr), args.map(parseTree))
       case Apply(Ident(Name(name)), args) =>
         App(name, args.map(parseTree))
       case Apply(TypeApply(Ident(Name(ctrName)), _), args) =>
         App(ctrName, args.map(parseTree))
-      case x =>
-        c.abort(tree.pos, "FOETUS. Unsupported syntax")
     }
 
     def parseCaseDef(caze: CaseDef): Branch = caze.pat match {
-      case Apply(tt:TypeTree, bs) => {
+      case Apply(tt:TypeTree, bs) =>
         Branch(Pat(unname(tt.original), bs.map { case Bind(Name(n), _) => n }), parseTree(caze.body))
-      }
-      case x =>
-        c.abort(caze.pat.pos, "FOETUS. Unsupported syntax")
     }
 
     def unname(t: Tree): String = t match {
       case Ident(Name(name)) => name
+      case Select(_, Name(name)) => name
     }
 
     def parseDef(name: String, vparamss: List[List[ValDef]], body: Tree): List[Def] = vparamss match {
       case params :: Nil =>
         List(Def(name, params.map(_.name.decodedName.toString), parseTree(body)))
-      case _ =>
-        c.abort(wrappingPos(vparamss.head), "FOETUS. Unsupported syntax")
     }
 
     def parseStmt(tree: Tree): List[Def] = tree match {
       case DefDef(modifiers, name, typeParams, params, returnType, body) =>
         parseDef(name.decodedName.toString, params, body)
-      case x =>
-        //c.warning(tree.pos, "FOETUS. Ignored definition")
-        Nil
     }
 
     def parseStmts(stmts: List[Tree]): List[Def] =
