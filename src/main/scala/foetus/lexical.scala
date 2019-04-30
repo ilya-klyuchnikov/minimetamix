@@ -1,7 +1,8 @@
 package foetus
 
+import foetus.calls._
+
 object lexical {
-  import calls._
 
   // finds a lexical ordering
   def lexicalOrder(recCalls: List[List[Relation]]): Option[List[Int]] = recCalls match {

@@ -1,7 +1,7 @@
 package foetus
 
-import ast._
-import calls._
+import foetus.ast._
+import foetus.calls._
 
 object ordering {
 

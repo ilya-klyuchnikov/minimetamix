@@ -4,7 +4,7 @@ import scala.language.implicitConversions
 import scala.language.experimental.macros
 import scala.reflect.macros._
 
-import ast._
+import foetus.ast._
 
 object parser {
   def parseDefs(expr: Any): List[Def] = macro parseDefsImpl

@@ -1,6 +1,6 @@
 package foetus
 
-import ast._
+import foetus.ast._
 
 object calls {
   type CallGraph = List[Call]
