@@ -52,3 +52,98 @@ object translator {
     defs.map(translateDef).reduce((p1, p2) => Program(p1.fDefs ++ p2.fDefs, p1.gDefs ++ p2.gDefs))
   }
 }
+
+/**
+  * Utilities for manipulating SLL AST
+  */
+object utils {
+
+  import data._
+
+  def isValue(e: Expr): Boolean = e match {
+    case Ctr(_, args) => args.forall(isValue)
+    case _ => false
+  }
+
+  def isVar(e: Expr): Boolean = e match {
+    case Var(_) => true
+    case _ => false
+  }
+
+  def fDef(program: Program, fName: Name): FDef =
+    program.fDefs.find(_.name == fName).get
+
+  def gDefs(program: Program, gName: Name): List[GDef] =
+    program.gDefs.filter(_.name == gName)
+
+  def gDef(program: Program, gName: Name, pName: Name): GDef =
+    gDefs(program, gName).find(_.pat.name == pName).get
+
+  def names(e: Expr): List[Name] = e match {
+    case Var(n) => List(n)
+    case Ctr(_, args) => args.flatMap(names)
+    case GCall(_, args) => args.flatMap(names)
+    case FCall(_, args) => args.flatMap(names)
+  }
+
+}
+
+object constraints {
+  import data._
+  import utils._
+
+  def isSllProgram(program: Program): Boolean =
+    program.fDefs.forall(isSllFDef) && program.gDefs.forall(isSllGDef)
+
+  // F-functions are sll-correct by constructions
+  private def isSllFDef(fDef: FDef): Boolean = true
+
+  // G-functions can use the first parameter in many places.
+  // This can result into undefined variables after translation.
+  // Checking that all variables are defined.
+  private def isSllGDef(gDef: GDef): Boolean = {
+    val params = gDef.pat.params ::: gDef.params
+    val bodyVariables = names(gDef.body)
+    bodyVariables.toSet.subsetOf(params.toSet)
+  }
+
+  // doesn't create/pass intermediate structures
+  def isTreeless(e: Expr): Boolean = e match {
+    case Var(_) => true
+    case Ctr(_, args) => args.forall(isTreeless)
+    case FCall(_, args) => args.forall(isVar)
+    case GCall(_, args) => args.forall(isVar)
+  }
+
+  def isLinear(e: Expr): Boolean = {
+    val vars = names(e)
+    vars.distinct == vars
+  }
+
+  def assertSll(program: Program): Unit = {
+    for (fDef <- program.fDefs)
+      assert(isSllFDef(fDef), s"SLL: ${fDef.name}")
+    for (gDef <- program.gDefs)
+      assert(isSllGDef(gDef), s"SLL: ${gDef.name}")
+  }
+
+  def assertTreeless(program: Program): Unit = {
+    for (fDef <- program.fDefs)
+      assert(isTreeless(fDef.body), s"treeless: ${fDef.name}")
+    for (gDef <- program.gDefs)
+      assert(isTreeless(gDef.body), s"treeless: ${gDef.name}")
+  }
+
+  def assertLinear(program: Program): Unit = {
+    for (fDef <- program.fDefs)
+      assert(isLinear(fDef.body), s"linear: ${fDef.name}")
+    for (gDef <- program.gDefs)
+      assert(isLinear(gDef.body), s"linear: ${gDef.name}")
+  }
+
+  def validate(program: Program): Unit = {
+    assertSll(program)
+    assertTreeless(program)
+    assertLinear(program)
+  }
+}
