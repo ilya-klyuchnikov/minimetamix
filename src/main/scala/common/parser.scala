@@ -1,10 +1,10 @@
-package foetus
+package common
 
 import scala.language.implicitConversions
 import scala.language.experimental.macros
-import scala.reflect.macros._
+import scala.reflect.macros.blackbox
 
-import foetus.ast._
+import common.ast._
 
 object parser {
   def parseDefs(expr: Any): List[Def] = macro parseDefsImpl

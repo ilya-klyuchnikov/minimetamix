@@ -1,8 +1,8 @@
-package foetus.test
+package common.test
 
-import foetus.adt._
-import foetus.ast._
-import foetus.parser._
+import common.adt._
+import common.ast._
+import common.parser._
 
 class ParserSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
 

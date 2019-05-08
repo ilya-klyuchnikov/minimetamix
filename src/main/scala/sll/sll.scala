@@ -26,7 +26,7 @@ object data {
   */
 object translator {
 
-  import foetus.ast.{Var => F_Var, Ctr => F_Ctr, Case, App, Def, Term}
+  import common.ast.{Var => F_Var, Ctr => F_Ctr, Case, App, Def, Term}
   import data._
 
   implicit def translate(defs: List[Def]): Program = {

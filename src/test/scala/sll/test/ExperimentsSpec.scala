@@ -1,7 +1,7 @@
 package sll.test
 
-import foetus.adt._
-import foetus.parser.parseDefs
+import common.adt._
+import common.parser.parseDefs
 
 import sll.constraints._
 import sll.data._

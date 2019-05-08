@@ -1,6 +1,6 @@
 package foetus
 
-import foetus.ast._
+import common.ast._
 import foetus.calls._
 
 object ordering {

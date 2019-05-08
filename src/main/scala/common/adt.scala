@@ -1,4 +1,4 @@
-package foetus
+package common
 
 /**
   * A collection of algebraic data types used in the definitions.

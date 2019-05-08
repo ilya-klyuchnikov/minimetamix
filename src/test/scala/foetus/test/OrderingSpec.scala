@@ -1,8 +1,8 @@
 package foetus.test
 
-import foetus.adt._
+import common.adt._
+import common.parser._
 import foetus.ordering._
-import foetus.parser._
 
 class OrderingSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
 

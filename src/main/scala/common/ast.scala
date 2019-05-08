@@ -1,4 +1,4 @@
-package foetus
+package common
 
 object ast {
   case class Def(name: String, params: List[String], body: Term)

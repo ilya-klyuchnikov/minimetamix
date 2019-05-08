@@ -1,8 +1,8 @@
 package foetus.test
 
-import foetus.adt._
+import common.adt._
+import common.parser._
 import foetus.calls._
-import foetus.parser._
 
 class CallsSpec extends org.scalatest.FunSpec {
 
