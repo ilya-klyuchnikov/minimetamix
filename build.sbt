@@ -1,6 +1,6 @@
 scalaVersion := "2.13.0-RC1"
 
-name := "foetus"
+name := "minimetamix"
 
 libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
 
