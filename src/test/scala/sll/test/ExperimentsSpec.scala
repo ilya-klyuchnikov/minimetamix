@@ -93,28 +93,28 @@ class ExperimentsSpec extends org.scalatest.FunSpec with org.scalatest.Matchers 
     }
 
   describe("my program is OK") {
-    it("prog1 is good SLL") {
-      validate(prog1)
+    it("prog1 is pure SLL") {
+      validatePure(prog1)
     }
 
-    it("prog2 is good SLL") {
-      validate(prog2)
+    it("prog2 is pure SLL") {
+      validatePure(prog2)
     }
 
-    it("prog3 is not good SLL") {
-      (the [AssertionError] thrownBy validate(prog3)).getMessage should include("linear: replace")
+    it("prog3 is not pure SLL") {
+      (the [AssertionError] thrownBy validatePure(prog3)).getMessage should include("pure linear: replace")
     }
 
     it("prog4 is good SLL") {
-      validate(prog4)
+      validatePure(prog4)
     }
 
-    it("prog5 (flatten) not treeless") {
-      (the [AssertionError] thrownBy validate(prog5)).getMessage should include("treeless: flatten")
+    it("prog5 (flatten) is not pure treeless") {
+      (the [AssertionError] thrownBy validatePure(prog5)).getMessage should include("pure treeless: flatten")
     }
 
-    it("prog6 (flatten1) is OK") {
-      validate(prog6)
+    it("prog6 (flatten1) is pure SLL") {
+      validatePure(prog6)
     }
   }
 

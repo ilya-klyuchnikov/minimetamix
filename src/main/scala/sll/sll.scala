@@ -86,38 +86,19 @@ object utils {
     case FCall(_, args) => args.flatMap(names)
   }
 
-}
-
-object constraints {
-  import data._
-  import utils._
-
   def isSllProgram(program: Program): Boolean =
     program.fDefs.forall(isSllFDef) && program.gDefs.forall(isSllGDef)
 
   // F-functions are sll-correct by constructions
-  private def isSllFDef(fDef: FDef): Boolean = true
+  def isSllFDef(fDef: FDef): Boolean = true
 
   // G-functions can use the first parameter in many places.
   // This can result into undefined variables after translation.
   // Checking that all variables are defined.
-  private def isSllGDef(gDef: GDef): Boolean = {
+  def isSllGDef(gDef: GDef): Boolean = {
     val params = gDef.pat.params ::: gDef.params
     val bodyVariables = names(gDef.body)
     bodyVariables.toSet.subsetOf(params.toSet)
-  }
-
-  // doesn't create/pass intermediate structures
-  def isTreeless(e: Expr): Boolean = e match {
-    case Var(_) => true
-    case Ctr(_, args) => args.forall(isTreeless)
-    case FCall(_, args) => args.forall(isVar)
-    case GCall(_, args) => args.forall(isVar)
-  }
-
-  def isLinear(e: Expr): Boolean = {
-    val vars = names(e)
-    vars.distinct == vars
   }
 
   def assertSll(program: Program): Unit = {
@@ -126,24 +107,41 @@ object constraints {
     for (gDef <- program.gDefs)
       assert(isSllGDef(gDef), s"SLL: ${gDef.name}")
   }
+}
 
-  def assertTreeless(program: Program): Unit = {
-    for (fDef <- program.fDefs)
-      assert(isTreeless(fDef.body), s"treeless: ${fDef.name}")
-    for (gDef <- program.gDefs)
-      assert(isTreeless(gDef.body), s"treeless: ${gDef.name}")
+object constraints {
+  import data._
+  import utils._
+
+  def isPureTreeless(e: Expr): Boolean = e match {
+    case Var(_) => true
+    case Ctr(_, args) => args.forall(isPureTreeless)
+    case FCall(_, args) => args.forall(isVar)
+    case GCall(_, args) => args.forall(isVar)
   }
 
-  def assertLinear(program: Program): Unit = {
-    for (fDef <- program.fDefs)
-      assert(isLinear(fDef.body), s"linear: ${fDef.name}")
-    for (gDef <- program.gDefs)
-      assert(isLinear(gDef.body), s"linear: ${gDef.name}")
+  def isPureLinear(e: Expr): Boolean = {
+    val vars = names(e)
+    vars.distinct == vars
   }
 
-  def validate(program: Program): Unit = {
+  def assertPureTreeless(program: Program): Unit = {
+    for (fDef <- program.fDefs)
+      assert(isPureTreeless(fDef.body), s"pure treeless: ${fDef.name}")
+    for (gDef <- program.gDefs)
+      assert(isPureTreeless(gDef.body), s"pure treeless: ${gDef.name}")
+  }
+
+  def assertPureLinear(program: Program): Unit = {
+    for (fDef <- program.fDefs)
+      assert(isPureLinear(fDef.body), s"pure linear: ${fDef.name}")
+    for (gDef <- program.gDefs)
+      assert(isPureLinear(gDef.body), s"pure linear: ${gDef.name}")
+  }
+
+  def validatePure(program: Program): Unit = {
     assertSll(program)
-    assertTreeless(program)
-    assertLinear(program)
+    assertPureTreeless(program)
+    assertPureLinear(program)
   }
 }
