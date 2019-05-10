@@ -30,6 +30,10 @@ object parser {
         App(name, args.map(parseTree))
       case Apply(TypeApply(Ident(Name(ctrName)), _), args) =>
         App(ctrName, args.map(parseTree))
+      case Apply(Select(_, Name(name)), args) =>
+        App(name, args.map(parseTree))
+      case Apply(TypeApply(Select(_, Name(name)), tpParams), args) =>
+        App(name, args.map(parseTree))
     }
 
     def parseCaseDef(caze: CaseDef): Branch = caze.pat match {
