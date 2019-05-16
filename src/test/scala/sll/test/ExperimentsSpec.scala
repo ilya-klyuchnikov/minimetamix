@@ -3,9 +3,9 @@ package sll.test
 import common.adt._
 import common.parser.parseDefs
 
-import sll.constraints._
 import sll.data._
 import sll.translator._
+import sll.treeless._
 
 class ExperimentsSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
 

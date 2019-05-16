@@ -1,6 +1,6 @@
 package sll.test.nameless
 
-import sll.constraints._
+import sll.treeless._
 
 class NamelessSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
 

@@ -46,7 +46,7 @@ class ConstraintsSpec extends org.scalatest.FunSpec with org.scalatest.Matchers 
 
   describe("checks") {
 
-    import sll.constraints._
+    import sll.treeless._
 
     it("prog1 is pure SLL") {
       validatePure(prog1)
