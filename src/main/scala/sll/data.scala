@@ -11,7 +11,6 @@ object data {
   case class Ctr(name: Name, args: List[Expr]) extends Expr
   case class FCall(name: Name, args: List[Expr]) extends Expr
   case class GCall(name: Name, args: List[Expr]) extends Expr
-  case class Let(k: Name, v: Expr, body: Expr) extends Expr
 
   case class Pat(name: Name, params: List[Name])
 
