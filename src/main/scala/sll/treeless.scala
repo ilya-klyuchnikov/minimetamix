@@ -6,36 +6,36 @@ object treeless {
 
   // pure treeless form
 
-  def isPureTreeless(e: Expr): Boolean = e match {
+  def isTreeless(e: Expr): Boolean = e match {
     case Var(_) => true
-    case Ctr(_, args) => args.forall(isPureTreeless)
+    case Ctr(_, args) => args.forall(isTreeless)
     case FCall(_, args) => args.forall(isVar)
     case GCall(_, args) => args.forall(isVar)
   }
 
-  def isPureLinear(e: Expr): Boolean = {
+  def isLinear(e: Expr): Boolean = {
     val vars = names(e)
     vars.distinct == vars
   }
 
-  def assertPureTreeless(program: Program): Unit = {
+  def assertTreeless(program: Program): Unit = {
     for (fDef <- program.fDefs)
-      assert(isPureTreeless(fDef.body), s"pure treeless: ${fDef.name}")
+      assert(isTreeless(fDef.body), s"pure treeless: ${fDef.name}")
     for (gDef <- program.gDefs)
-      assert(isPureTreeless(gDef.body), s"pure treeless: ${gDef.name}")
+      assert(isTreeless(gDef.body), s"pure treeless: ${gDef.name}")
   }
 
-  def assertPureLinear(program: Program): Unit = {
+  def assertLinear(program: Program): Unit = {
     for (fDef <- program.fDefs)
-      assert(isPureLinear(fDef.body), s"pure linear: ${fDef.name}")
+      assert(isLinear(fDef.body), s"pure linear: ${fDef.name}")
     for (gDef <- program.gDefs)
-      assert(isPureLinear(gDef.body), s"pure linear: ${gDef.name}")
+      assert(isLinear(gDef.body), s"pure linear: ${gDef.name}")
   }
 
-  def validatePure(program: Program): Unit = {
+  def validate(program: Program): Unit = {
     assertSll(program)
-    assertPureTreeless(program)
-    assertPureLinear(program)
+    assertTreeless(program)
+    assertLinear(program)
   }
 
   // blazed treeless form

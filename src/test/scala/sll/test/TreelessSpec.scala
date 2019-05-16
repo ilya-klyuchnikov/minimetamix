@@ -5,7 +5,7 @@ import common.parser.parseDefs
 import sll.data._
 import sll.translator._
 
-class ConstraintsSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
+class TreelessSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
 
   val prog1: Program =
     parseDefs {
@@ -49,19 +49,19 @@ class ConstraintsSpec extends org.scalatest.FunSpec with org.scalatest.Matchers 
     import sll.treeless._
 
     it("prog1 is pure SLL") {
-      validatePure(prog1)
+      validate(prog1)
     }
 
     it("prog2 in not correct SLL") {
-      (the [AssertionError] thrownBy validatePure(prog2)).getMessage should include("SLL: test")
+      (the [AssertionError] thrownBy validate(prog2)).getMessage should include("SLL: test")
     }
 
     it("prog3 is not pure treeless") {
-      (the [AssertionError] thrownBy validatePure(prog3)).getMessage should include("pure treeless: id")
+      (the [AssertionError] thrownBy validate(prog3)).getMessage should include("pure treeless: id")
     }
 
     it("prog4 is not pure linear") {
-      (the [AssertionError] thrownBy validatePure(prog4)).getMessage should include("pure linear: first1")
+      (the [AssertionError] thrownBy validate(prog4)).getMessage should include("pure linear: first1")
     }
   }
 
