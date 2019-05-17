@@ -24,7 +24,7 @@ object parser {
         Case(parseTree(selector), cases.map(parseCaseDef))
       case Apply(Select(ctr, Name("apply")), args) =>
         Ctr(unname(ctr), args.map(parseTree))
-      case Apply(TypeApply(Select(ctr, Name("apply")), tpParams), args) =>
+      case Apply(TypeApply(Select(ctr, Name("apply")), _), args) =>
         Ctr(unname(ctr), args.map(parseTree))
       case Apply(Ident(Name(name)), args) =>
         App(name, args.map(parseTree))
@@ -32,7 +32,7 @@ object parser {
         App(ctrName, args.map(parseTree))
       case Apply(Select(_, Name(name)), args) =>
         App(name, args.map(parseTree))
-      case Apply(TypeApply(Select(_, Name(name)), tpParams), args) =>
+      case Apply(TypeApply(Select(_, Name(name)), _), args) =>
         App(name, args.map(parseTree))
     }
 
@@ -46,32 +46,24 @@ object parser {
       case Select(_, Name(name)) => name
     }
 
-    def parseDef(name: String, vparamss: List[List[ValDef]], body: Tree): List[Def] = vparamss match {
-      case params :: Nil =>
-        List(Def(name, params.map(_.name.decodedName.toString), parseTree(body)))
+    def parseStmt(tree: Tree): Def = tree match {
+      case DefDef(modifiers, Name(n), _, params, _, rhs) =>
+        Def(n, params.head.map(_.name.decodedName.toString), parseTree(rhs))
     }
-
-    def parseStmt(tree: Tree): List[Def] = tree match {
-      case DefDef(modifiers, name, typeParams, params, returnType, body) =>
-        parseDef(name.decodedName.toString, params, body)
-    }
-
-    def parseStmts(stmts: List[Tree]): List[Def] =
-      stmts.flatMap(parseStmt)
 
     def parseBlock(tree: Tree): c.Expr[List[Def]] = tree match {
       case Block(stmts, _) =>
-        val defs = parseStmts(stmts)
+        val defs = stmts.map(parseStmt)
         reify(qList(defs.map(qDef(_))).splice)
     }
 
     def qs(s: String) =
       c.Expr[String](Literal(Constant(s)))
 
-    def qList[T: WeakTypeTag](xs: List[Expr[T]]): Expr[List[T]] =
-      xs.foldRight(reify{ Nil: List[T] }) {
-        (x, y) => reify { x.splice :: y.splice }
-      }
+    def qList[T: WeakTypeTag](xs: List[Expr[T]]): Expr[List[T]] = {
+      val nil = reify { List[T]() }
+      xs.foldRight(nil) { (x, y) => reify { x.splice :: y.splice} }
+    }
 
     def qTerm(t: Term): Expr[Term] = t match {
       case Var(n) =>
