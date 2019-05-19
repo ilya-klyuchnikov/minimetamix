@@ -30,6 +30,7 @@ class NamelessSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
 
   describe("Nameless2 examples") {
     import Programs.P2._
+    import Nameless2XAST._
 
     it("flip(L(A()))") {
       val input = IGCall1("flip", Ctr1("L", Ctr0("A")))
@@ -52,6 +53,7 @@ class NamelessSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
   
   describe("Nameless3 examples") {
     import Programs.P3._
+    import Nameless3AST._
 
     it("add(Z(), Z()") {
       val input = IGCall2("add", Ctr0("Z"), Ctr0("Z"))

@@ -6,40 +6,13 @@ import sll.translator._
 
 /** The quoted version of Nameless0 */
 object Nameless1Q {
+  import Nameless1AST._
 
   def getF0(n: String): DExp0 = ???
   def getF1(n: String): DExp1 = ???
   def getG00(n: String, pn: String): DExp0 = ???
   def getG01(n: String, pn: String): DExp1 = ???
   def getG10(n: String, pn: String): DExp1 = ???
-
-  sealed trait Val
-  case class Ctr0(name: String) extends Val
-  case class Ctr1(name: String, arg1: Val) extends Val
-  case class Ctr2(name: String, arg1: Val, arg2: Val) extends Val
-  case class Err() extends Val
-
-  sealed trait DExp
-  sealed trait DExp0 extends DExp
-  sealed trait DExp1 extends DExp
-
-  case class DCtr0(name: String) extends DExp0
-  case class DCtr10(name: String, arg1: DExp0) extends DExp0
-  case class DCtr200(name: String, arg1: DExp0, arg2: DExp0) extends DExp0
-  case class DFCall0(name: String) extends DExp0
-
-  case class DVar() extends DExp1
-  case class DCtr11(name: String, arg1: DExp1) extends DExp1
-  case class DCtr210(name: String, arg1: DExp1, arg2: DExp0) extends DExp1
-  case class DCtr201(name: String, arg1: DExp0, arg2: DExp1) extends DExp1
-  case class DFCall1(name: String) extends DExp1
-  case class DGCall1(name: String) extends DExp1
-
-  sealed trait IExp
-  case class IVal(v: Val) extends IExp
-  case class IFCall0(name: String) extends IExp
-  case class IFCall1(name: String, arg1: Val) extends IExp
-  case class IGCall1(name: String, arg1: Val) extends IExp
 
   def blaze[A](a: A): A = a
 
@@ -55,13 +28,6 @@ object Nameless1Q {
       case Ctr0(pn) => dEval0(blaze(getG00(gn, pn)))
       case Ctr1(pn, arg1) => dEval1(blaze(getG10(gn, pn)), arg1)
       case Ctr2(pn, arg1, arg2) => Err()
-      case Err() => Err()
-    }
-
-    def switchVal1(v: Val, gn: String, arg2: Val): Val = v match {
-      case Ctr0(pn) => dEval1(blaze(getG01(gn, pn)), arg2)
-      case Ctr1(pn, arg1) => Err()
-      case Ctr2(pn, carg1, carg2) => Err()
       case Err() => Err()
     }
 

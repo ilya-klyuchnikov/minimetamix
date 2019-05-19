@@ -4,6 +4,8 @@ object Programs {
   // add(Z(), y) = y
   // add(S(x), y) = S(add(x, y))
   object P3 extends Nameless3 {
+    import Nameless3AST._
+
     override def getF0(n: String): DExp0 =
       sys.error(s"F0: $n")
     override def getF1(n: String): DExp1 =
@@ -34,6 +36,8 @@ object Programs {
   // flip(L(x)) = L(x)
   // flip(B(x, y)) = B(flip(y), flip(x))
   object P2 extends Nameless2X {
+    import Nameless2XAST._
+
     override def getF0(n: String): DExp0 =
       sys.error(s"F0: $n")
     override def getF1(n: String): DExp1 =
