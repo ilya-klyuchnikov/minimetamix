@@ -16,22 +16,22 @@ object Nameless0Q {
   val program: Program = parseDefs {
     def iEval(iExp: IExp): Val = iExp match {
       case IVal(v) => v
-      case IFCall0(n) => dEval0(blaze(getF0(n)))
-      case IGCall1(n, farg1) => switchVal(farg1, n)
+      case IFCall0(n) => eval0(blaze(getF0(n)))
+      case IGCall1(n, farg1) => switch0(farg1, n)
     }
 
-    def switchVal(v: Val, gn: String): Val = v match {
-      case Ctr0(pn) => dEval0(blaze(getG00(gn, pn)))
+    def switch0(v: Val, gn: String): Val = v match {
+      case Ctr0(pn) => eval0(blaze(getG00(gn, pn)))
       case Ctr1(pn, arg1) => Err()
       case Ctr2(pn, arg1, arg2) => Err()
       case Err() => Err()
     }
 
-    def dEval0(exp: DExp0): Val = exp match {
+    def eval0(exp: DExp0): Val = exp match {
       case DCtr0(n) => Ctr0(n)
-      case DCtr10(n, arg) => Ctr1(n, dEval0(arg))
-      case DCtr200(n, arg1, arg2) => Ctr2(n, dEval0(arg1), dEval0(arg2))
-      case DFCall0(n) => dEval0(blaze(getF0(n)))
+      case DCtr10(n, arg) => Ctr1(n, eval0(arg))
+      case DCtr200(n, arg1, arg2) => Ctr2(n, eval0(arg1), eval0(arg2))
+      case DFCall0(n) => eval0(blaze(getF0(n)))
     }
   }
 }
