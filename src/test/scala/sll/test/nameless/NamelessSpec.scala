@@ -50,21 +50,4 @@ class NamelessSpec extends org.scalatest.funspec.AnyFunSpec with org.scalatest.m
       validate_+(Nameless3Q.program)
     }
   }
-
-  describe("Nameless3 examples") {
-    import Programs.P3._
-    import Nameless3AST._
-
-    it("add(Z(), Z()") {
-      val input = IGCall2("add", Ctr0("Z"), Ctr0("Z"))
-      val expectedOutput = Ctr0("Z")
-      assert(iEval(input) === expectedOutput)
-    }
-
-    it("add(S(Z()), Z()") {
-      val input = IGCall2("add", Ctr1("S", Ctr0("Z")), Ctr0("Z"))
-      val expectedOutput = Ctr1("S", Ctr0("Z"))
-      assert(iEval(input) === expectedOutput)
-    }
-  }
 }

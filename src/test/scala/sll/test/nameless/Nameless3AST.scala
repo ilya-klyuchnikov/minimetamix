@@ -27,12 +27,12 @@ object Nameless3AST {
   case class DCtr210(name: String, arg1: DExp1, arg2: DExp0) extends DExp1
   case class DCtr201(name: String, arg1: DExp0, arg2: DExp1) extends DExp1
   case class DFCall1(name: String) extends DExp1
-  case class DGCall1(name: String) extends DExp1
+  case class DGCall1(name: GN) extends DExp1
 
   case class DCtr12(name: String, arg1: DExp2) extends DExp2
   case class DCtr211(name: String, arg1: DExp1, arg2: DExp1) extends DExp2
   case class DFCall2(name: String) extends DExp2
-  case class DGCall2(name: String) extends DExp2
+  case class DGCall2(name: GN) extends DExp2
 
   case class DFCall3(name: String) extends DExp3
   case class DCtr1_3(name: String, arg1: DExp3) extends DExp3
@@ -45,8 +45,10 @@ object Nameless3AST {
   case class IVal(v: Val) extends IExp
   case class IFCall0(name: String) extends IExp
   case class IFCall1(name: String, arg1: Val) extends IExp
-  case class IGCall1(name: String, arg1: Val) extends IExp
+  case class IGCall1(name: GN, arg1: Val) extends IExp
   case class IFCall2(name: String, arg1: Val, arg2: Val) extends IExp
-  case class IGCall2(name: String, arg1: Val, arg2: Val) extends IExp
+  case class IGCall2(name: GN, arg1: Val, arg2: Val) extends IExp
   case class IFCall3(name: String, arg1: Val, arg2: Val, arg3: Val) extends IExp
+
+  trait GN
 }

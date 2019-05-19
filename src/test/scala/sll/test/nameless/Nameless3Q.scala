@@ -13,12 +13,22 @@ object Nameless3Q {
   def getF2(n: String): DExp2 = ???
   def getF3(n: String): DExp3 = ???
 
-  def getG00(n: String, pn: String): DExp0 = ???
-  def getG01(n: String, pn: String): DExp1 = ???
-  def getG10(n: String, pn: String): DExp1 = ???
-  def getG11(n: String, pn: String): DExp2 = ???
-  def getG20(n: String, pn: String): DExp2 = ???
-  def getG21(n: String, pn: String): DExp3 = ???
+  def g1_00(pn: String): DExp0 = ???
+  def g1_01(pn: String): DExp1 = ???
+  def g1_10(pn: String): DExp1 = ???
+  def g1_11(pn: String): DExp2 = ???
+  def g1_20(pn: String): DExp2 = ???
+  def g1_21(pn: String): DExp3 = ???
+
+  def g2_00(pn: String): DExp0 = ???
+  def g2_01(pn: String): DExp1 = ???
+  def g2_10(pn: String): DExp1 = ???
+  def g2_11(pn: String): DExp2 = ???
+  def g2_20(pn: String): DExp2 = ???
+  def g2_21(pn: String): DExp3 = ???
+
+  case class G1() extends GN
+  case class G2() extends GN
 
   def blaze[A](a: A): A = a
 
@@ -26,21 +36,41 @@ object Nameless3Q {
     def fSwitch0(fn: String): Val =
       eval0(blaze(getF0(fn)))
 
-    def gSwitch0(v: Val, gn: String): Val = v match {
-      case Ctr0(pn) => eval0(blaze(getG00(gn, pn)))
-      case Ctr1(pn, arg1) => eval1(blaze(getG10(gn, pn)), arg1)
-      case Ctr2(pn, arg1, arg2) => eval2(blaze(getG20(gn, pn)), arg1, arg2)
-      case Err() => Err()
+    def gSwitch0(gn: GN, v: Val): Val = gn match {
+      case G1() => switch0_g1(v)
+      case G2() => switch0_g2(v)
+    }
+
+    def switch0_g1(v: Val): Val = v match {
+      case Ctr0(pn) => eval0(blaze(g1_00(pn)))
+      case Ctr1(pn, arg1) => eval1(blaze(g1_10(pn)), arg1)
+      case Ctr2(pn, arg1, arg2) => eval2(blaze(g1_20(pn)), arg1, arg2)
+    }
+
+    def switch0_g2(v: Val): Val = v match {
+      case Ctr0(pn) => eval0(blaze(g2_00(pn)))
+      case Ctr1(pn, arg1) => eval1(blaze(g2_10(pn)), arg1)
+      case Ctr2(pn, arg1, arg2) => eval2(blaze(g2_20(pn)), arg1, arg2)
     }
 
     def fSwitch1(fn: String, arg1: Val): Val =
       eval1(blaze(getF1(fn)), arg1)
 
-    def gSwitch1(v: Val, gn: String, arg2: Val): Val = v match {
-      case Ctr0(pn) => eval1(blaze(getG01(gn, pn)), arg2)
-      case Ctr1(pn, arg1) => eval2(blaze(getG11(gn, pn)), arg1, arg2)
-      case Ctr2(pn, carg1, carg2) => eval3(blaze(getG21(gn, pn)), carg1, carg2, arg2)
-      case Err() => Err()
+    def gSwitch1(gn: GN, v: Val, arg2: Val): Val = gn match {
+      case G1() => switch1_g1(v, arg2)
+      case G2() => switch1_g2(v, arg2)
+    }
+
+    def switch1_g1(v: Val, arg: Val): Val = v match {
+      case Ctr0(pn) => eval1(blaze(g1_01(pn)), arg)
+      case Ctr1(pn, arg1) => eval2(blaze(g1_11(pn)), arg1, arg)
+      case Ctr2(pn, arg1, arg2) => eval3(blaze(g1_21(pn)), arg1, arg2, arg)
+    }
+
+    def switch1_g2(v: Val, arg: Val): Val = v match {
+      case Ctr0(pn) => eval1(blaze(g2_01(pn)), arg)
+      case Ctr1(pn, arg1) => eval2(blaze(g2_11(pn)), arg1, arg)
+      case Ctr2(pn, arg1, arg2) => eval3(blaze(g2_21(pn)), arg1, arg2, arg)
     }
 
     def fSwitch2(fn: String, arg1: Val, arg2: Val): Val =
@@ -59,7 +89,7 @@ object Nameless3Q {
     def eval1(exp: DExp1, arg1: Val): Val = exp match {
       case DVar() => arg1
       case DFCall1(n) => fSwitch1(n, arg1)
-      case DGCall1(n) => gSwitch0(arg1, n)
+      case DGCall1(n) => gSwitch0(n, arg1)
       case DCtr11(n, carg1) => Ctr1(n, eval1(carg1, arg1))
       case DCtr210(n, carg1, carg2) => Ctr2(n, eval1(carg1, arg1), eval0(carg2))
       case DCtr201(n, carg1, carg2) => Ctr2(n, eval0(carg1), eval1(carg2, arg1))
@@ -67,7 +97,7 @@ object Nameless3Q {
 
     def eval2(exp: DExp2, arg1: Val, arg2: Val): Val = exp match {
       case DFCall2(n) => fSwitch2(n, arg1, arg2)
-      case DGCall2(n) => gSwitch1(arg1, n, arg2)
+      case DGCall2(n) => gSwitch1(n, arg1, arg2)
       case DCtr12(n, carg1) => Ctr1(n, eval2(carg1, arg1, arg2))
       case DCtr211(n, carg1, carg2) => Ctr2(n, eval1(carg1, arg1), eval1(carg2, arg2))
     }
@@ -87,8 +117,8 @@ object Nameless3Q {
       case IFCall1(n, arg1) => fSwitch1(n, arg1)
       case IFCall2(n, arg1, arg2) => fSwitch2(n, arg1, arg2)
       case IFCall3(n, arg1, arg2, arg3) => fSwitch3(n, arg1, arg2, arg3)
-      case IGCall1(n, arg1) => gSwitch0(arg1, n)
-      case IGCall2(n, arg1, arg2) => gSwitch1(arg1, n, arg2)
+      case IGCall1(n, arg1) => gSwitch0(n, arg1)
+      case IGCall2(n, arg1, arg2) => gSwitch1(n, arg1, arg2)
     }
   }
 }
