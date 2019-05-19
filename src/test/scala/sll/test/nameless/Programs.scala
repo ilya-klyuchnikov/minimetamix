@@ -22,7 +22,7 @@ object Programs {
       sys.error(s"getG10: $n, $pn")
     override def getG11(n: String, pn: String): DExp2 = (n, pn) match {
       // add(S(x), y) = S(add(x, y))
-      case ("add", "S") => DCtr12("S", DGCall2("add", DVar(), DVar()))
+      case ("add", "S") => DCtr12("S", DGCall2("add"))
       case _ => sys.error(s"getG01: $n, $pn")
     }
     override def getG20(n: String, pn: String): DExp2 =
@@ -51,7 +51,7 @@ object Programs {
     override def getG11(n: String, pn: String): DExp2 =
       sys.error(s"getG11: $n, $pn")
     override def getG20(n: String, pn: String): DExp2 = (n, pn) match {
-      case ("flip", "B") => DCtr211_2("B", DGCall1("flip", DVar()), DGCall1("flip", DVar()))
+      case ("flip", "B") => DCtr211_2("B", DGCall1("flip"), DGCall1("flip"))
       case _ => sys.error(s"getG20: $n, $pn")
     }
   }

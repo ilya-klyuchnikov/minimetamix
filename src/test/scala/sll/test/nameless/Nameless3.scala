@@ -38,15 +38,15 @@ trait Nameless3 {
   case class DCtr11(name: String, arg1: DExp1) extends DExp1
   case class DCtr210(name: String, arg1: DExp1, arg2: DExp0) extends DExp1
   case class DCtr201(name: String, arg1: DExp0, arg2: DExp1) extends DExp1
-  case class DFCall1(name: String, arg1: DVar) extends DExp1
-  case class DGCall1(name: String, arg1: DVar) extends DExp1
+  case class DFCall1(name: String) extends DExp1
+  case class DGCall1(name: String) extends DExp1
 
   case class DCtr12(name: String, arg1: DExp2) extends DExp2
   case class DCtr211(name: String, arg1: DExp1, arg2: DExp1) extends DExp2
-  case class DFCall2(name: String, arg1: DVar, arg2: DVar) extends DExp2
-  case class DGCall2(name: String, arg1: DVar, arg2: DVar) extends DExp2
+  case class DFCall2(name: String) extends DExp2
+  case class DGCall2(name: String) extends DExp2
 
-  case class DFCall3(name: String, arg1: DVar, arg2: DVar, arg3: DVar) extends DExp3
+  case class DFCall3(name: String) extends DExp3
   case class DCtr1_3(name: String, arg1: DExp3) extends DExp3
   case class DCtr2_03(name: String, arg1: DExp0, arg2: DExp3) extends DExp3
   case class DCtr2_12(name: String, arg1: DExp1, arg2: DExp2) extends DExp3
@@ -97,62 +97,26 @@ trait Nameless3 {
 
   def dEval1(exp: DExp1, arg1: Val): Val = exp match {
     case DVar() => arg1
-    case DFCall1(n, farg1) => dEvalF1(farg1, n, arg1)
-    case DGCall1(n, farg1) => dEvalG1(farg1, n, arg1)
+    case DFCall1(n) => dEval1(blaze(getF1(n)), arg1)
+    case DGCall1(n) => switchVal(arg1, n)
     case DCtr11(n, carg1) => Ctr1(n, dEval1(carg1, arg1))
     case DCtr210(n, carg1, carg2) => Ctr2(n, dEval1(carg1, arg1), dEval0(carg2))
     case DCtr201(n, carg1, carg2) => Ctr2(n, dEval0(carg1), dEval1(carg2, arg1))
   }
 
-  def dEvalF1(farg1: DVar, n: String, arg1: Val): Val = farg1 match {
-    case DVar() => dEval1(blaze(getF1(n)), arg1)
-  }
-
-  def dEvalG1(farg1: DVar, n: String, arg1: Val): Val = farg1 match {
-    case DVar() => switchVal(arg1, n)
-  }
-
   def dEval2(exp: DExp2, arg1: Val, arg2: Val): Val = exp match {
-    case DFCall2(n, farg1, farg2) => dEvalF21(farg1, farg2, n, arg1, arg2)
-    case DGCall2(n, farg1, farg2) => dEvalG21(farg1, farg2, n, arg1, arg2)
+    case DFCall2(n) => dEval2(blaze(getF2(n)), arg1, arg2)
+    case DGCall2(n) => switchVal1(arg1, n, arg2)
     case DCtr12(n, carg1) => Ctr1(n, dEval2(carg1, arg1, arg2))
     case DCtr211(n, carg1, carg2) => Ctr2(n, dEval1(carg1, arg1), dEval1(carg2, arg2))
   }
 
   def dEval3(exp: DExp3, arg1: Val, arg2: Val, arg3: Val): Val = exp match {
-    case DFCall3(n, farg1, farg2, farg3) => dEvalF31(farg1, farg2, farg3, n, arg1, arg2, arg3)
+    case DFCall3(n) => dEval3(blaze(getF3(n)), arg1, arg2, arg3)
     case DCtr1_3(n, carg1) => Ctr1(n, dEval3(carg1, arg1, arg2, arg3))
     case DCtr2_03(n, carg1, carg2) => Ctr2(n, dEval0(carg1), dEval3(carg2, arg1, arg2, arg3))
     case DCtr2_12(n, carg1, carg2) => Ctr2(n, dEval1(carg1, arg1), dEval2(carg2, arg2, arg3))
     case DCtr2_21(n, carg1, carg2) => Ctr2(n, dEval2(carg1, arg1, arg2), dEval1(carg2, arg3))
     case DCtr2_30(n, carg1, carg2) => Ctr2(n, dEval3(carg1, arg1, arg2, arg3), dEval0(carg2))
-  }
-
-  def dEvalF21(farg1: DVar, farg2: DVar, n: String, arg1: Val, arg2: Val): Val = farg1 match {
-    case DVar() => dEvalF22(farg2, n, arg1, arg2)
-  }
-
-  def dEvalF22(farg2: DVar, n: String, arg1: Val, arg2: Val): Val = farg2 match {
-    case DVar() => dEval2(blaze(getF2(n)), arg1, arg2)
-  }
-
-  def dEvalG21(farg1: DVar, farg2: DVar, gn: String, arg1: Val, arg2: Val): Val = farg1 match {
-    case DVar() => dEvalG22(farg2, gn, arg1, arg2)
-  }
-
-  def dEvalG22(farg2: DVar, gn: String, arg1: Val, arg2: Val): Val = farg2 match {
-    case DVar() => switchVal1(arg1, gn, arg2)
-  }
-
-  def dEvalF31(farg1: DVar, farg2: DVar, farg3: DVar, n: String, arg1: Val, arg2: Val, arg3: Val): Val = farg1 match {
-    case DVar() => dEvalF32(farg2, farg3, n, arg1, arg2, arg3)
-  }
-
-  def dEvalF32(farg2: DVar, farg3: DVar, n: String, arg1: Val, arg2: Val, arg3: Val): Val = farg2 match {
-    case DVar() => dEvalF33(farg3, n, arg1, arg2, arg3)
-  }
-
-  def dEvalF33(farg3: DVar, n: String, arg1: Val, arg2: Val, arg3: Val): Val = farg3 match {
-    case DVar() => dEval3(blaze(getF3(n)), arg1, arg2, arg3)
   }
 }
