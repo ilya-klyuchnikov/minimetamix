@@ -19,17 +19,13 @@ object treeless {
   }
 
   def assertTreeless(program: Program): Unit = {
-    for (fDef <- program.fDefs)
-      assert(isTreeless(fDef.body), s"pure treeless: ${fDef.name}")
-    for (gDef <- program.gDefs)
-      assert(isTreeless(gDef.body), s"pure treeless: ${gDef.name}")
+    for (d <- program.defs)
+      assert(isTreeless(d.body), s"pure treeless: ${d.name}")
   }
 
   def assertLinear(program: Program): Unit = {
-    for (fDef <- program.fDefs)
-      assert(isLinear(fDef.body), s"pure linear: ${fDef.name}")
-    for (gDef <- program.gDefs)
-      assert(isLinear(gDef.body), s"pure linear: ${gDef.name}")
+    for (d <- program.defs)
+      assert(isLinear(d.body), s"pure linear: ${d.name}")
   }
 
   def validate(program: Program): Unit = {
@@ -67,17 +63,13 @@ object treeless {
   }
 
   def assertTreeless_+(program: Program): Unit = {
-    for (fDef <- program.fDefs)
-      assert(isTreeless_+(fDef.body), s"blazed treeless: ${fDef.name}")
-    for (gDef <- program.gDefs)
-      assert(isTreeless_+(gDef.body), s"blazed treeless: ${gDef.name}")
+    for (d <- program.defs)
+      assert(isTreeless_+(d.body), s"blazed treeless: ${d.name}")
   }
 
   def assertLinear_+(program: Program): Unit = {
-    for (fDef <- program.fDefs)
-      assert(isLinear_+(fDef.body), s"blazed linear: ${fDef.name}")
-    for (gDef <- program.gDefs)
-      assert(isLinear_+(gDef.body), s"blazed linear: ${gDef.name}")
+    for (d <- program.defs)
+      assert(isLinear_+(d.body), s"blazed linear: ${d.name}")
   }
 
   def validate_+(program: Program): Unit = {

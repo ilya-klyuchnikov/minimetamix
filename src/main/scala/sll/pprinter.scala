@@ -29,9 +29,10 @@ object pprinter {
   }
 
   def pprintProgram(p: Program): String = {
-    val fdefs = p.fDefs.map(pprintF)
-    val gdefs = p.gDefs.map(pprintG)
-    val defs = fdefs ::: gdefs
+    val defs = p.defs.map {
+      case fDef: FDef => pprintF(fDef)
+      case gDef: GDef => pprintG(gDef)
+    }
     defs.mkString("\n")
   }
 

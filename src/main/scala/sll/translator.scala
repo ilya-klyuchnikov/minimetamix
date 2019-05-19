@@ -7,20 +7,20 @@ import scala.language.implicitConversions
   */
 object translator {
 
-  import common.ast.{Var => F_Var, Ctr => F_Ctr, Case, App, Def, Term}
+  import common.ast.{Var => F_Var, Ctr => F_Ctr, Case, App, Def => F_Def, Term}
   import data._
 
-  implicit def translate(defs: List[Def]): Program = {
-    val gNames = defs.collect { case Def(n, _, Case(_, _)) => n }.toSet
+  implicit def translate(defs: List[F_Def]): Program = {
+    val gNames = defs.collect { case F_Def(n, _, Case(_, _)) => n }.toSet
 
-    def translateDef(d: Def): Program = d match {
-      case Def(n, g_param :: params, Case(selector, bs)) if selector == F_Var(g_param) =>
+    def translateDef(d: F_Def): List[Def] = d match {
+      case F_Def(n, g_param :: params, Case(selector, bs)) if selector == F_Var(g_param) =>
         val gDefs = bs.map { branch =>
           GDef(n, Pat(branch.pat.name, branch.pat.params), params, translateExpr(branch.body))
         }
-        Program(Nil, gDefs)
-      case Def(n, params, body) =>
-        Program(FDef(n, params, translateExpr(body)) :: Nil, Nil)
+        gDefs
+      case F_Def(n, params, body) =>
+        List(FDef(n, params, translateExpr(body)))
     }
 
     def translateExpr(term: Term): Expr = term match {
@@ -30,6 +30,6 @@ object translator {
       case F_Ctr(n, args) => Ctr(n, args.map(translateExpr))
     }
 
-    defs.map(translateDef).reduce((p1, p2) => Program(p1.fDefs ++ p2.fDefs, p1.gDefs ++ p2.gDefs))
+    Program(defs.map(translateDef).reduce(_ ++ _))
   }
 }

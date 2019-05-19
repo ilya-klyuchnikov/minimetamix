@@ -14,8 +14,12 @@ object data {
 
   case class Pat(name: Name, params: List[Name])
 
-  case class FDef(name: Name, params: List[Name], body: Expr)
-  case class GDef(name: Name, pat: Pat, params: List[Name], body: Expr)
+  sealed trait Def {
+    val name: Name
+    val body: Expr
+  }
+  case class FDef(name: Name, params: List[Name], body: Expr) extends Def
+  case class GDef(name: Name, pat: Pat, params: List[Name], body: Expr) extends Def
 
-  case class Program(fDefs: List[FDef], gDefs: List[GDef])
+  case class Program(defs: List[Def])
 }

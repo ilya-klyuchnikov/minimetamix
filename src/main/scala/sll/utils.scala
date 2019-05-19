@@ -17,11 +17,17 @@ object utils {
     case _ => false
   }
 
+  private def fDefs(program: Program): List[FDef] =
+    program.defs.collect {case d: FDef => d}
+
+  private def gDefs(program: Program): List[GDef] =
+    program.defs.collect {case d: GDef => d}
+
   def fDef(program: Program, fName: Name): FDef =
-    program.fDefs.find(_.name == fName).get
+    fDefs(program).find(_.name == fName).get
 
   def gDefs(program: Program, gName: Name): List[GDef] =
-    program.gDefs.filter(_.name == gName)
+    gDefs(program).filter(_.name == gName)
 
   def gDef(program: Program, gName: Name, pName: Name): GDef =
     gDefs(program, gName).find(_.pat.name == pName).get
@@ -33,8 +39,10 @@ object utils {
     case FCall(_, args) => args.flatMap(names)
   }
 
-  def isSllProgram(program: Program): Boolean =
-    program.fDefs.forall(isSllFDef) && program.gDefs.forall(isSllGDef)
+  def isSllDef(d: Def): Boolean = d match {
+    case fDef: FDef => isSllFDef(fDef)
+    case gDef: GDef => isSllGDef(gDef)
+  }
 
   // F-functions are sll-correct by constructions
   def isSllFDef(fDef: FDef): Boolean = true
@@ -49,9 +57,7 @@ object utils {
   }
 
   def assertSll(program: Program): Unit = {
-    for (fDef <- program.fDefs)
-      assert(isSllFDef(fDef), s"SLL: ${fDef.name}")
-    for (gDef <- program.gDefs)
-      assert(isSllGDef(gDef), s"SLL: ${gDef.name}")
+    for (d <- program.defs)
+      assert(isSllDef(d), s"SLL: ${d.name}")
   }
 }
