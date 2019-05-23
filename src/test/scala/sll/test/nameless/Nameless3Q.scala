@@ -20,15 +20,7 @@ object Nameless3Q {
   def g1_20(pn: String): DExp2 = ???
   def g1_21(pn: String): DExp3 = ???
 
-  def g2_00(pn: String): DExp0 = ???
-  def g2_01(pn: String): DExp1 = ???
-  def g2_10(pn: String): DExp1 = ???
-  def g2_11(pn: String): DExp2 = ???
-  def g2_20(pn: String): DExp2 = ???
-  def g2_21(pn: String): DExp3 = ???
-
   case class G1() extends GN
-  case class G2() extends GN
 
   def blaze[A](a: A): A = a
 
@@ -38,7 +30,6 @@ object Nameless3Q {
 
     def gSwitch0(gn: GN, v: Val): Val = gn match {
       case G1() => switch0_g1(v)
-      case G2() => switch0_g2(v)
     }
 
     def switch0_g1(v: Val): Val = v match {
@@ -47,30 +38,17 @@ object Nameless3Q {
       case Ctr2(pn, arg1, arg2) => eval2(blaze(g1_20(pn)), arg1, arg2)
     }
 
-    def switch0_g2(v: Val): Val = v match {
-      case Ctr0(pn) => eval0(blaze(g2_00(pn)))
-      case Ctr1(pn, arg1) => eval1(blaze(g2_10(pn)), arg1)
-      case Ctr2(pn, arg1, arg2) => eval2(blaze(g2_20(pn)), arg1, arg2)
-    }
-
     def fSwitch1(fn: String, arg1: Val): Val =
       eval1(blaze(getF1(fn)), arg1)
 
     def gSwitch1(gn: GN, v: Val, arg2: Val): Val = gn match {
       case G1() => switch1_g1(v, arg2)
-      case G2() => switch1_g2(v, arg2)
     }
 
     def switch1_g1(v: Val, arg: Val): Val = v match {
       case Ctr0(pn) => eval1(blaze(g1_01(pn)), arg)
       case Ctr1(pn, arg1) => eval2(blaze(g1_11(pn)), arg1, arg)
       case Ctr2(pn, arg1, arg2) => eval3(blaze(g1_21(pn)), arg1, arg2, arg)
-    }
-
-    def switch1_g2(v: Val, arg: Val): Val = v match {
-      case Ctr0(pn) => eval1(blaze(g2_01(pn)), arg)
-      case Ctr1(pn, arg1) => eval2(blaze(g2_11(pn)), arg1, arg)
-      case Ctr2(pn, arg1, arg2) => eval3(blaze(g2_21(pn)), arg1, arg2, arg)
     }
 
     def fSwitch2(fn: String, arg1: Val, arg2: Val): Val =
