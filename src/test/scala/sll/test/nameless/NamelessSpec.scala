@@ -66,4 +66,26 @@ class NamelessSpec extends org.scalatest.funspec.AnyFunSpec with org.scalatest.m
       )
     }
   }
+
+  describe("Nameless3VQ") {
+    it("Nameless3VQ is blazed SLL") {
+      validate_+(Nameless3VQ.program)
+
+      assert(findUnOrderedFDefs(Nameless3VQ.program) ===
+        List()
+      )
+
+      // It means that the assertion about ordered variables is too strong.
+      // Fortunately, it happens only for constructors!
+      assert(findUnOrderedGDefs(Nameless3VQ.program) ===
+        List(
+          ("eval1", "DCtr210"),
+          ("eval2", "DCtr211"),
+          ("eval3", "DCtr2_12"),
+          ("eval3", "DCtr2_21"),
+          ("eval3", "DCtr2_30"),
+        )
+      )
+    }
+  }
 }
