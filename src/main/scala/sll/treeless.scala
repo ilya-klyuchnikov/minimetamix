@@ -59,4 +59,28 @@ object treeless {
     assertTreeless_+(program)
     assertLinear(program)
   }
+
+  def findUnOrderedFDef(d: Def): Option[Name] = d match {
+    case FDef(fn, params, body) =>
+      if (params == names(body)) None
+      else Some(fn)
+    case GDef(_, _, _, _) =>
+      None
+  }
+
+  // the order of names in the lhs is the same as in the rhs
+  def findUnOrderedFDefs(program: Program): List[Name] =
+    program.defs.flatMap(findUnOrderedFDef)
+
+  def findUnOrderedGDef(d: Def): Option[(Name, Name)] = d match {
+    case FDef(_, _, _) => None
+    case GDef(gn, Pat(pn, xs), ys, body) =>
+      if ((xs ++ ys) == names(body))  None
+      else Some((gn, pn))
+  }
+
+  def findUnOrderedGDefs(program: Program): List[(Name, Name)] =
+    program.defs.flatMap(findUnOrderedGDef)
+
+
 }
