@@ -69,7 +69,6 @@ object Nameless3VQ {
       case DFCall1(n) => fSwitch1(n, arg1)
       case DGCall1(n) => gSwitch0(n, arg1)
       case DCtr11(n, carg1) => Ctr1(n, eval1(carg1, arg1))
-      case DCtr210(n, carg1, carg2) => Ctr2(n, eval1(carg1, arg1), eval0(carg2))
       case DCtr201(n, carg1, carg2) => Ctr2(n, eval0(carg1), eval1(carg2, arg1))
     }
 
@@ -77,16 +76,14 @@ object Nameless3VQ {
       case DFCall2(n) => fSwitch2(n, arg1, arg2)
       case DGCall2(n) => gSwitch1(n, arg1, arg2)
       case DCtr12(n, carg1) => Ctr1(n, eval2(carg1, arg1, arg2))
-      case DCtr211(n, carg1, carg2) => Ctr2(n, eval1(carg1, arg1), eval1(carg2, arg2))
+      case DCtr211(n, carg1) => Ctr2(n, eval1(carg1, arg1), arg2)
     }
 
     def eval3(exp: DExp3, arg1: Val, arg2: Val, arg3: Val): Val = exp match {
       case DFCall3(n) => fSwitch3(n, arg1, arg2, arg3)
       case DCtr1_3(n, carg1) => Ctr1(n, eval3(carg1, arg1, arg2, arg3))
       case DCtr2_03(n, carg1, carg2) => Ctr2(n, eval0(carg1), eval3(carg2, arg1, arg2, arg3))
-      case DCtr2_12(n, carg1, carg2) => Ctr2(n, eval1(carg1, arg1), eval2(carg2, arg2, arg3))
-      case DCtr2_21(n, carg1, carg2) => Ctr2(n, eval2(carg1, arg1, arg2), eval1(carg2, arg3))
-      case DCtr2_30(n, carg1, carg2) => Ctr2(n, eval3(carg1, arg1, arg2, arg3), eval0(carg2))
+      case DCtr2_21(n, carg1) => Ctr2(n, eval2(carg1, arg1, arg2), arg3)
     }
 
     def iEval(iExp: IExp): Val = iExp match {

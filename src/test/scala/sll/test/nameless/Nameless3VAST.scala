@@ -24,22 +24,21 @@ object Nameless3VAST {
 
   case class DVar() extends DExp1
   case class DCtr11(name: String, arg1: DExp1) extends DExp1
-  case class DCtr210(name: String, arg1: DExp1, arg2: DExp0) extends DExp1
   case class DCtr201(name: String, arg1: DExp0, arg2: DExp1) extends DExp1
   case class DFCall1(name: String) extends DExp1
   case class DGCall1(name: GN) extends DExp1
 
   case class DCtr12(name: String, arg1: DExp2) extends DExp2
-  case class DCtr211(name: String, arg1: DExp1, arg2: DExp1) extends DExp2
+  // arg2 is Var()
+  case class DCtr211(name: String, arg1: DExp1) extends DExp2
   case class DFCall2(name: String) extends DExp2
   case class DGCall2(name: GN) extends DExp2
 
   case class DFCall3(name: String) extends DExp3
   case class DCtr1_3(name: String, arg1: DExp3) extends DExp3
   case class DCtr2_03(name: String, arg1: DExp0, arg2: DExp3) extends DExp3
-  case class DCtr2_12(name: String, arg1: DExp1, arg2: DExp2) extends DExp3
-  case class DCtr2_21(name: String, arg1: DExp2, arg2: DExp1) extends DExp3
-  case class DCtr2_30(name: String, arg1: DExp3, arg2: DExp0) extends DExp3
+  // arg2 is Var()
+  case class DCtr2_21(name: String, arg1: DExp2) extends DExp3
 
   sealed trait IExp
   case class IVal(v: Val) extends IExp
