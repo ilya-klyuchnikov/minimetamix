@@ -47,7 +47,7 @@ class NamelessSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
 
   describe("Nameless3Q") {
     it("Nameless3Q is blazed SLL") {
-      validate_+(Nameless2Q.program)
+      validate_+(Nameless3Q.program)
     }
   }
   
