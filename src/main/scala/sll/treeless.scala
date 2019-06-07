@@ -36,19 +36,6 @@ object treeless {
 
   // blazed treeless form
 
-  def names_+(e: Expr): List[Name] = e match {
-    case Var(n) => List(n)
-    case Ctr(_, args) => args.flatMap(names)
-    case GCall(_, args) => args.flatMap(names)
-    case FCall("blaze", args) => Nil
-    case FCall(_, args) => args.flatMap(names)
-  }
-
-  def isLinear_+(e: Expr): Boolean = {
-    val vars = names_+(e)
-    vars.distinct == vars
-  }
-
   def is_-(e: Expr): Boolean = e match {
     case Var(_) => true
     case FCall("blaze", _) => true
@@ -67,14 +54,9 @@ object treeless {
       assert(isTreeless_+(d.body), s"blazed treeless: ${d.name}")
   }
 
-  def assertLinear_+(program: Program): Unit = {
-    for (d <- program.defs)
-      assert(isLinear_+(d.body), s"blazed linear: ${d.name}")
-  }
-
   def validate_+(program: Program): Unit = {
     assertSll(program)
     assertTreeless_+(program)
-    assertLinear_+(program)
+    assertLinear(program)
   }
 }
