@@ -1,0 +1,101 @@
+# The attempt
+
+The attempt is about to write a treeless interpreter for treeless programs.
+Thus, allowing to (self)-apply deforestation.
+This could be (at least in theory).
+
+1. A good news: it is possible to formalize a subset of treeless programs for which it is
+quite easy/straightforward to write treeless interpreters. One such subset is a set
+of programs in which the order of parameters (on the lhs) is the same as the order of
+variables on the rhs. And the arity of functions is limited. So, the idea is to write
+specialized but treeless interpreters.
+
+2. All NamelessX interpreters are treeless. They use a special form of the programs - where
+variable are used in a particular order and all constructors/containers are marked with
+explicit information about which variables occur inside them. This allows to not pass all
+variables in all the places.
+
+3. A bad news: the resulting interpreters themselves do not follow the same conventions.
+There are cases when the order on the rhs differs from the order on the lhs.
+
+4. What's the problem?
+- When variables are all ordered, it is quite simple to reason about sub-parts. - It is
+enough just to label how many variables are inside a specific container (and its sub-parts).
+Considering an arbitrary order is more complex - we need to think about rearranging/remapping,
+since a sub-call changes the reference point.
+
+An example???
+
+eval2(DCtr211(n, carg1, carg2), arg1, arg2) = Ctr2(n, eval1(carg1, arg1), eval1(carg2, arg2))
+
+Ctr(n, sub1, sub2)[arg1, arg2] => Ctr(n, sub1[arg1], arg2[sub2])
+
+
+--------
+
+DGCall2(n)[arg1, arg2]     => gSwitch1(n)[arg1, arg2]
+gSwitch1(G1())[arg1, arg2] => switch1_g1(arg1)[arg2]
+// switching over the shape of arg1
+switch1_g1(Ctr0(pn))[arg1] => eval1(g1(pn))[arg1]
+switch1_g1(Ctr1(pn, carg1))[arg1] => eval2(g1(pn))[carg1, arg1]
+switch1_g1(Ctr2(pn, carg1, carg2))[arg1] => eval3(g1(pn))[carg1, carg2, arg1]
+--------
+
+eval3()
+
+---
+
+OK, so it seems that it is enough to have "two-level" syntax for variable passing.
+Then, the next great question is whether the deforested program will hold the same
+properties???
+
+And this is a really interesting question!
+
+Sub-questions:
+1. Can we get any simple deforester for nameless programs?
+2. Can we get any simple deforester for two-level nameless programs?
+
+---->
+
+Stack.
+
+An expression is
+
+form[env]
+---
+
+Try:
+
+app(Nil, ys) = ys;
+app(Cons(x, xs), ys) = Cons(x, app(xs, ys));
+----------
+app|2(Nil_0) = v
+app|2(Cons_2) = Cons(v, app);
+-------
+--- Can we have just one universal variable??
+--- Yes, we can. And it is extremely interesting!!!
+--- Wow...
+app|2(v, app(v, v)) =
+
+--- Do we have a property of "orderness"??
+--- Can we assume that the order of variables will be the same for
+--- any combination/superposition of ordered functions???
+
+Theorem 1. Any composition of ordered nameless treeless functions can be
+deforested into ordered nameless treeless functions.
+
+---
+
+This is a great lemma for proving with Agda/Idris/etc.
+
+Theorem 2. Any composition of two-level ordered nameless treeless functions
+is deforestable into two-level ordered nameless treeless functions.
+
+---
+
+Theorem 3. There is a generic two-level ordered nameless interpreter for sll2.
+
+---
+
+
+

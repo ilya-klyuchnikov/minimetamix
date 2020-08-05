@@ -27,7 +27,7 @@ trait Nameless3 {
   def fSwitch0(fn: String): Val =
     eval0(blaze(getF0(fn)))
 
-  def gSwitch0(gn: GN)( v: Val): Val = gn match {
+  def gSwitch0(gn: GN)(v: Val): Val = gn match {
     case G1() => switch0_g1(v)
   }
 
@@ -95,16 +95,5 @@ trait Nameless3 {
     case DCtr2_12(n, carg1, carg2) => Ctr2(n, eval1(carg1)(arg1), eval2(carg2)(arg2, arg3))
     case DCtr2_21(n, carg1, carg2) => Ctr2(n, eval2(carg1)(arg1, arg2), eval1(carg2)(arg3))
     case DCtr2_30(n, carg1, carg2) => Ctr2(n, eval3(carg1)(arg1, arg2, arg3), eval0(carg2))
-  }
-
-  def iEval(iExp: IExp): Val = iExp match {
-    case IVal(v) => v
-    case IFCall0(n) => fSwitch0(n)
-    case IFCall1(n, arg1) => fSwitch1(n)(arg1)
-    case IFCall2(n, arg1, arg2) => fSwitch2(n)(arg1, arg2)
-    case IFCall3(n, arg1, arg2, arg3) => fSwitch3(n)(arg1, arg2, arg3)
-    case IGCall1(n, arg1) => gSwitch0(n)(arg1)
-    case IGCall2(n, arg1, arg2) => gSwitch1(n, arg1, arg2)
-    case IGCall3(n, arg1, arg2, arg3) => gSwitch2(n, arg1, arg2, arg3)
   }
 }
