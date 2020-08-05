@@ -7,7 +7,7 @@ import sll.data._
 import sll.translator._
 import sll.treeless._
 
-class ExperimentsSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
+class ExperimentsSpec extends org.scalatest.funspec.AnyFunSpec with org.scalatest.matchers.should.Matchers {
 
   // Let's start with the simplest use case:
   sealed trait Step

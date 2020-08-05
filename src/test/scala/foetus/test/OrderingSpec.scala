@@ -4,7 +4,7 @@ import common.adt._
 import common.parser._
 import foetus.ordering._
 
-class OrderingSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
+class OrderingSpec extends org.scalatest.funspec.AnyFunSpec with org.scalatest.matchers.should.Matchers {
 
   describe("termination checker") {
 

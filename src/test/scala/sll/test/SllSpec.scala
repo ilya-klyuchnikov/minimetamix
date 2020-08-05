@@ -5,7 +5,7 @@ import common.parser.parseDefs
 import sll.data._
 import sll.translator._
 
-class SllSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
+class SllSpec extends org.scalatest.funspec.AnyFunSpec with org.scalatest.matchers.should.Matchers {
 
   val prog1: Program =
     parseDefs {

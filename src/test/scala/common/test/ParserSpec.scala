@@ -4,7 +4,7 @@ import common.adt._
 import common.ast._
 import common.parser._
 
-class ParserSpec extends org.scalatest.FunSpec with org.scalatest.Matchers {
+class ParserSpec extends org.scalatest.funspec.AnyFunSpec with org.scalatest.matchers.should.Matchers {
 
   describe("parsing subset of Scala into SLL") {
 

@@ -4,7 +4,7 @@ import common.adt._
 import common.parser._
 import foetus.calls._
 
-class CallsSpec extends org.scalatest.FunSpec {
+class CallsSpec extends org.scalatest.funspec.AnyFunSpec {
 
   describe("f, g, h, id, k") {
     val defs = parseDefs {

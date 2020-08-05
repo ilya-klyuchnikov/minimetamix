@@ -3,7 +3,7 @@ package foetus.test
 import foetus.calls._
 import foetus.lexical._
 
-class LexicalSpec extends org.scalatest.FunSpec {
+class LexicalSpec extends org.scalatest.funspec.AnyFunSpec {
 
   describe("LexicalSpec.scala") {
     assert(
