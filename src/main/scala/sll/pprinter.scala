@@ -5,11 +5,11 @@ import sll.data._
 object pprinter {
 
   private def pprintExpr(e: Expr): String = e match {
-    case Var(n) => n
-    case Ctr(n, args) => args.map(pprintExpr).mkString(s"$n(", ", ", ")")
+    case Var(n)                    => n
+    case Ctr(n, args)              => args.map(pprintExpr).mkString(s"$n(", ", ", ")")
     case FCall("blaze", List(arg)) => s"*${pprintExpr(arg)}"
-    case FCall(n, args) => args.map(pprintExpr).mkString(s"$n(", ", ", ")")
-    case GCall(n, args) => args.map(pprintExpr).mkString(s"$n(", ", ", ")")
+    case FCall(n, args)            => args.map(pprintExpr).mkString(s"$n(", ", ", ")")
+    case GCall(n, args)            => args.map(pprintExpr).mkString(s"$n(", ", ", ")")
   }
 
   private def pprintPat(p: Pat): String =
@@ -43,11 +43,12 @@ object pprinter {
     val leftMax =
       parts.flatten.map(_._1.length).max
 
-    val alignedParts = parts.map { _.map {
-      case (lhs, rhs) =>
+    val alignedParts = parts.map {
+      _.map { case (lhs, rhs) =>
         val delta = " " * (leftMax - lhs.length)
         (lhs + delta, rhs)
-    }}
+      }
+    }
 
     alignedParts.map(_.map { case (lhs, rhs) => s"$lhs = $rhs" }.mkString("\n")).mkString("\n\n")
   }

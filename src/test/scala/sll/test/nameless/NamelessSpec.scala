@@ -2,7 +2,9 @@ package sll.test.nameless
 
 import sll.treeless._
 
-class NamelessSpec extends org.scalatest.funspec.AnyFunSpec with org.scalatest.matchers.should.Matchers {
+class NamelessSpec
+    extends org.scalatest.funspec.AnyFunSpec
+    with org.scalatest.matchers.should.Matchers {
 
   describe("Nameless0Q") {
     it("Nameless0Q is blazed SLL") {

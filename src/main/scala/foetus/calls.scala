@@ -10,15 +10,15 @@ object calls {
     override def toString: String = s"${caller} -> ${callee} | ${callMatrix}"
   }
 
-  /**
-   * Builds a list of calls for given definitions.
-   *
-   * @param defs definitions to analyse
-   * @return a list of calls f->g (for each call of g inside f)
-   */
-  def callGraph(defs: List[Def]): CallGraph = defs.flatMap {
-    case Def(name, params, body) =>
-      collectCalls(name, params.map(Var), body)
+  /** Builds a list of calls for given definitions.
+    *
+    * @param defs
+    *   definitions to analyse
+    * @return
+    *   a list of calls f->g (for each call of g inside f)
+    */
+  def callGraph(defs: List[Def]): CallGraph = defs.flatMap { case Def(name, params, body) =>
+    collectCalls(name, params.map(Var), body)
   }
 
   private def collectCalls(caller: String, params: List[Term], t: Term): List[Call] = t match {
@@ -32,7 +32,7 @@ object calls {
     // propagation of positive information
     case Case(Var(vn), bs) =>
       bs.flatMap { case Branch(Pat(cn, xs), body) =>
-        val params1 = params map{ _ / (vn, Ctr(cn, xs.map(Var))) }
+        val params1 = params map { _ / (vn, Ctr(cn, xs.map(Var))) }
         val body1 = body / (vn, Ctr(cn, xs.map(Var)))
         collectCalls(caller, params1, body1)
       }
@@ -45,7 +45,7 @@ object calls {
   // callee params - should be terms
   // args - should be terms
   private def callMatrix(callerParams: List[Term], calleeArgs: List[Term]): CallMatrix =
-    calleeArgs.map( arg => callerParams.map (param => arg <=> param) )
+    calleeArgs.map(arg => callerParams.map(param => arg <=> param))
 
   sealed trait Relation
   case object `=` extends Relation
@@ -58,7 +58,7 @@ object calls {
   private def heByDiving(term1: Term, term2: Term): Boolean = term2 match {
     case Ctr(_, args) => args exists (he(term1, _))
     case App(_, args) => args exists (he(term1, _))
-    case _ => false
+    case _            => false
   }
 
   private def heByCoupling(term1: Term, term2: Term): Boolean = (term1, term2) match {
@@ -73,18 +73,18 @@ object calls {
 
   implicit class TermOps(val t: Term) {
     def size: Int = t match {
-      case Var(_) =>        1
-      case App(_, args) =>  1 + args.map(_.size).sum
-      case Ctr(_, args) =>  1 + args.map(_.size).sum
-      case Case(sel, bs) => 1 + sel.size + bs.map{b => 1 + b.pat.params.size + b.body.size}.sum
+      case Var(_)        => 1
+      case App(_, args)  => 1 + args.map(_.size).sum
+      case Ctr(_, args)  => 1 + args.map(_.size).sum
+      case Case(sel, bs) => 1 + sel.size + bs.map { b => 1 + b.pat.params.size + b.body.size }.sum
     }
   }
 
   implicit class TermOpsExtra(t: Term) {
-    def <=> (t2: Term): Relation = (he(t, t2), t.size < t2.size) match {
-      case (true, true) => `<`
+    def <=>(t2: Term): Relation = (he(t, t2), t.size < t2.size) match {
+      case (true, true)  => `<`
       case (true, false) => `=`
-      case (false, _) => `?`
+      case (false, _)    => `?`
     }
 
     // elementary substitution
@@ -96,7 +96,7 @@ object calls {
       case App(n, args) =>
         App(n, args.map(_ / bind))
       case Case(sel, bs) =>
-        Case(sel / bind, bs map {case Branch(p, body) => Branch(p, body / bind)})
+        Case(sel / bind, bs map { case Branch(p, body) => Branch(p, body / bind) })
     }
   }
 }

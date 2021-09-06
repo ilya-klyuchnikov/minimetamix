@@ -1,7 +1,6 @@
 package common
 
-/**
-  * A collection of algebraic data types used in the definitions.
+/** A collection of algebraic data types used in the definitions.
   */
 object adt {
 

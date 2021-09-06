@@ -10,12 +10,12 @@ class SllSpec extends org.scalatest.funspec.AnyFunSpec with org.scalatest.matche
   val prog1: Program =
     parseDefs {
       def gAdd(gX: Nat, y: Nat): Nat = gX match {
-        case Z() => y
+        case Z()  => y
         case S(x) => S(gAdd(x, y))
       }
 
       def gMult(gX: Nat, y: Nat): Nat = gX match {
-        case Z() => Z()
+        case Z()  => Z()
         case S(x) => gAdd(y, gMult(x, y))
       }
 
@@ -33,9 +33,19 @@ class SllSpec extends org.scalatest.funspec.AnyFunSpec with org.scalatest.matche
         Program(
           List(
             GDef("gAdd", Pat("Z", List()), List("y"), Var("y")),
-            GDef("gAdd", Pat("S", List("x")), List("y"), Ctr("S", List(GCall("gAdd", List(Var("x"), Var("y")))))),
+            GDef(
+              "gAdd",
+              Pat("S", List("x")),
+              List("y"),
+              Ctr("S", List(GCall("gAdd", List(Var("x"), Var("y"))))),
+            ),
             GDef("gMult", Pat("Z", List()), List("y"), Ctr("Z", List())),
-            GDef("gMult", Pat("S", List("x")), List("y"), GCall("gAdd", List(Var("y"), GCall("gMult", List(Var("x"), Var("y")))))),
+            GDef(
+              "gMult",
+              Pat("S", List("x")),
+              List("y"),
+              GCall("gAdd", List(Var("y"), GCall("gMult", List(Var("x"), Var("y"))))),
+            ),
             FDef("fSqr", List("x"), GCall("gMult", List(Var("x"), Var("x")))),
             FDef("id", List("x"), FCall("id", List(Var("x")))),
           )

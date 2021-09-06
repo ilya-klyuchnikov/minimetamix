@@ -11,46 +11,52 @@ class LexicalSpec extends org.scalatest.funspec.AnyFunSpec {
         List(
           List(`?`)
         )
-      ) === None)
+      ) === None
+    )
 
     assert(
       lexicalOrder(
         List(
           List(`=`)
         )
-      ) === None)
+      ) === None
+    )
 
     assert(
       lexicalOrder(
         List(
           List(`<`)
         )
-      ) === Some(List(0)))
-
-    assert(
-      lexicalOrder(
-        List(
-          List(`?`, `<`, `=`),
-          List(`<`, `=`, `<`)
-        )
-      ) === Some(List(1, 0)))
+      ) === Some(List(0))
+    )
 
     assert(
       lexicalOrder(
         List(
           List(`?`, `<`, `=`),
           List(`<`, `=`, `<`),
-          List(`?`, `=`, `<`)
         )
-      ) === Some(List(1, 2)))
+      ) === Some(List(1, 0))
+    )
+
+    assert(
+      lexicalOrder(
+        List(
+          List(`?`, `<`, `=`),
+          List(`<`, `=`, `<`),
+          List(`?`, `=`, `<`),
+        )
+      ) === Some(List(1, 2))
+    )
 
     assert(
       lexicalOrder(
         List(
           List(`?`, `<`, `=`, `=`),
           List(`<`, `=`, `?`, `?`),
-          List(`?`, `=`, `<`, `?`)
+          List(`?`, `=`, `<`, `?`),
         )
-      ) === None)
+      ) === None
+    )
   }
 }

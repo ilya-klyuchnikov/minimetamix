@@ -9,7 +9,7 @@ class CallsSpec extends org.scalatest.funspec.AnyFunSpec {
   describe("f, g, h, id, k") {
     val defs = parseDefs {
       def f(x: Nat): Nat = x match {
-        case Z() => Z()
+        case Z()     => Z()
         case S(pred) => S(f(pred))
       }
       def g(x: Nat): Nat =
@@ -19,17 +19,19 @@ class CallsSpec extends org.scalatest.funspec.AnyFunSpec {
       def id(x: Nat): Nat =
         x
       def k(x: Nat): Nat = id(x) match {
-        case Z() => Z()
+        case Z()     => Z()
         case S(pred) => k(pred)
       }
     }
 
-    assert(callGraph(defs) === List(
-      Call("f", "f",  List(List(`<`))),
-      Call("g", "g",  List(List(`=`))),
-      Call("h", "h",  List(List(`?`))),
-      Call("k", "id", List(List(`=`))),
-      Call("k", "k",  List(List(`?`)))
-    ))
+    assert(
+      callGraph(defs) === List(
+        Call("f", "f", List(List(`<`))),
+        Call("g", "g", List(List(`=`))),
+        Call("h", "h", List(List(`?`))),
+        Call("k", "id", List(List(`=`))),
+        Call("k", "k", List(List(`?`))),
+      )
+    )
   }
 }

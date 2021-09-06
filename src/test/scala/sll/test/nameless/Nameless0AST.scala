@@ -1,7 +1,7 @@
 package sll.test.nameless
 
-/** A specialization of the SLL syntax:
-  * the maximal number of variables in the body a definition is 0.
+/** A specialization of the SLL syntax: the maximal number of variables in the body a definition is
+  * 0.
   */
 object Nameless0AST {
   sealed trait Val

@@ -5,26 +5,27 @@ import common.parser.parseDefs
 import sll.data._
 import sll.translator._
 
-class TreelessSpec extends org.scalatest.funspec.AnyFunSpec with org.scalatest.matchers.should.Matchers {
+class TreelessSpec
+    extends org.scalatest.funspec.AnyFunSpec
+    with org.scalatest.matchers.should.Matchers {
 
   val prog1: Program =
     parseDefs {
       def gAdd(gX: Nat, y: Nat): Nat = gX match {
-        case Z() => y
+        case Z()  => y
         case S(x) => S(gAdd(x, y))
       }
 
       def gEven(x: Nat): Bool = x match {
-        case Z() => True()
+        case Z()   => True()
         case S(x1) => gOdd(x1)
       }
 
       def gOdd(x: Nat): Bool = x match {
-        case Z() => False()
+        case Z()   => False()
         case S(x1) => gEven(x1)
       }
     }
-
 
   val prog2: Program =
     parseDefs {
@@ -53,15 +54,17 @@ class TreelessSpec extends org.scalatest.funspec.AnyFunSpec with org.scalatest.m
     }
 
     it("prog2 in not correct SLL") {
-      (the [AssertionError] thrownBy validate(prog2)).getMessage should include("SLL: test")
+      (the[AssertionError] thrownBy validate(prog2)).getMessage should include("SLL: test")
     }
 
     it("prog3 is not pure treeless") {
-      (the [AssertionError] thrownBy validate(prog3)).getMessage should include("pure treeless: id")
+      (the[AssertionError] thrownBy validate(prog3)).getMessage should include("pure treeless: id")
     }
 
     it("prog4 is not pure linear") {
-      (the [AssertionError] thrownBy validate(prog4)).getMessage should include("pure linear: first1")
+      (the[AssertionError] thrownBy validate(prog4)).getMessage should include(
+        "pure linear: first1"
+      )
     }
   }
 

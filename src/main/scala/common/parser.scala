@@ -37,12 +37,15 @@ object parser {
     }
 
     def parseCaseDef(caze: CaseDef): Branch = caze.pat match {
-      case Apply(tt:TypeTree, bs) =>
-        Branch(Pat(unname(tt.original), bs.map { case Bind(Name(n), _) => n }), parseTree(caze.body))
+      case Apply(tt: TypeTree, bs) =>
+        Branch(
+          Pat(unname(tt.original), bs.map { case Bind(Name(n), _) => n }),
+          parseTree(caze.body),
+        )
     }
 
     def unname(t: Tree): String = t match {
-      case Ident(Name(name)) => name
+      case Ident(Name(name))     => name
       case Select(_, Name(name)) => name
     }
 
@@ -62,7 +65,7 @@ object parser {
 
     def qList[T: WeakTypeTag](xs: List[Expr[T]]): Expr[List[T]] = {
       val nil = reify { List[T]() }
-      xs.foldRight(nil) { (x, y) => reify { x.splice :: y.splice} }
+      xs.foldRight(nil) { (x, y) => reify { x.splice :: y.splice } }
     }
 
     def qTerm(t: Term): Expr[Term] = t match {
@@ -72,11 +75,11 @@ object parser {
         }
       case Ctr(n, args) =>
         reify {
-          Ctr(qs(n).splice, qList(args.map(qTerm(_))).splice )
+          Ctr(qs(n).splice, qList(args.map(qTerm(_))).splice)
         }
       case App(n, args) =>
         reify {
-          App(qs(n).splice, qList(args.map(qTerm(_))).splice )
+          App(qs(n).splice, qList(args.map(qTerm(_))).splice)
         }
       case Case(sel, branches) =>
         reify {
@@ -94,7 +97,7 @@ object parser {
     def qDef(d: Def): Expr[Def] = d match {
       case Def(n, ps, body) =>
         reify {
-          Def(qs(n).splice, qList(ps.map(qs(_))).splice , qTerm(body).splice)
+          Def(qs(n).splice, qList(ps.map(qs(_))).splice, qTerm(body).splice)
         }
     }
 

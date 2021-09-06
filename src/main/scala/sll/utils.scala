@@ -1,7 +1,6 @@
 package sll
 
-/**
-  * Utilities for manipulating SLL AST
+/** Utilities for manipulating SLL AST
   */
 object utils {
 
@@ -9,19 +8,19 @@ object utils {
 
   def isValue(e: Expr): Boolean = e match {
     case Ctr(_, args) => args.forall(isValue)
-    case _ => false
+    case _            => false
   }
 
   def isVar(e: Expr): Boolean = e match {
     case Var(_) => true
-    case _ => false
+    case _      => false
   }
 
   private def fDefs(program: Program): List[FDef] =
-    program.defs.collect {case d: FDef => d}
+    program.defs.collect { case d: FDef => d }
 
   private def gDefs(program: Program): List[GDef] =
-    program.defs.collect {case d: GDef => d}
+    program.defs.collect { case d: GDef => d }
 
   def fDef(program: Program, fName: Name): FDef =
     fDefs(program).find(_.name == fName).get
@@ -33,8 +32,8 @@ object utils {
     gDefs(program, gName).find(_.pat.name == pName).get
 
   def names(e: Expr): List[Name] = e match {
-    case Var(n) => List(n)
-    case Ctr(_, args) => args.flatMap(names)
+    case Var(n)         => List(n)
+    case Ctr(_, args)   => args.flatMap(names)
     case GCall(_, args) => args.flatMap(names)
     case FCall(_, args) => args.flatMap(names)
   }

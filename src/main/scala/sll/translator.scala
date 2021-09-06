@@ -2,8 +2,7 @@ package sll
 
 import scala.language.implicitConversions
 
-/**
-  * Translation of Foetus AST (with case expressions) into SLL AST (without case expressions)
+/** Translation of Foetus AST (with case expressions) into SLL AST (without case expressions)
   */
 object translator {
 

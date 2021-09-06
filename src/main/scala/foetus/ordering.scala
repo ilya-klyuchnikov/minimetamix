@@ -7,31 +7,32 @@ object ordering {
 
   implicit class RelationOps(r1: Relation) {
     def *(r2: Relation) = (r1, r2) match {
-      case (`?`, _) | (_, `?`)=> `?`
-      case (`<`, _) | (_, `<`)  => `<`
-      case (`=`, `=`) => `=`
+      case (`?`, _) | (_, `?`) => `?`
+      case (`<`, _) | (_, `<`) => `<`
+      case (`=`, `=`)          => `=`
     }
     def +(r2: Relation) = (r1, r2) match {
       case (`<`, _) | (_, `<`) => `<`
       case (`=`, _) | (_, `=`) => `=`
-      case (`?`, `?`) => `?`
+      case (`?`, `?`)          => `?`
     }
   }
 
   implicit class CallMatrixOps(m1: CallMatrix) {
     def *(m2: CallMatrix): CallMatrix =
-      for {row <- m1} yield
-        for {col <- m2.transpose} yield
-          (row, col).zipped.map(_ * _).reduce(_ + _)
+      for { row <- m1 } yield for { col <- m2.transpose } yield (row, col).zipped
+        .map(_ * _)
+        .reduce(_ + _)
 
     def diag =
       for (i <- m1.indices.toList) yield m1(i)(i)
   }
 
-  /**
-   * @param defs - definitions to order
-   * @return a list of pairs (f -> Option[Order])
-   */
+  /** @param defs
+    *   - definitions to order
+    * @return
+    *   a list of pairs (f -> Option[Order])
+    */
   def orderDefs(defs: List[Def]): List[(String, Option[List[Int]])] = {
     val graph: CallGraph = callGraph(defs)
     val callers: List[String] = defs.map(_.name)

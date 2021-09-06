@@ -1,7 +1,6 @@
 package sll
 
-/**
-  * SLL AST (without case expressions)
+/** SLL AST (without case expressions)
   */
 object data {
   type Name = String
