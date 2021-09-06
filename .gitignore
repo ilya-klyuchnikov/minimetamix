@@ -1,6 +1,6 @@
-.idea/
-.idea_modules/
-.cache
-.project
-.classpath
 target/
+.bloop/
+/.bsp/
+/.idea/
+/.metals/
+/.vscode/
