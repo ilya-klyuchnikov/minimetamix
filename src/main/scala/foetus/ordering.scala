@@ -6,12 +6,12 @@ import foetus.calls._
 object ordering {
 
   implicit class RelationOps(r1: Relation) {
-    def *(r2: Relation) = (r1, r2) match {
+    def *(r2: Relation): Relation = (r1, r2) match {
       case (`?`, _) | (_, `?`) => `?`
       case (`<`, _) | (_, `<`) => `<`
       case (`=`, `=`)          => `=`
     }
-    def +(r2: Relation) = (r1, r2) match {
+    def +(r2: Relation): Relation = (r1, r2) match {
       case (`<`, _) | (_, `<`) => `<`
       case (`=`, _) | (_, `=`) => `=`
       case (`?`, `?`)          => `?`
@@ -24,7 +24,7 @@ object ordering {
         .map(_ * _)
         .reduce(_ + _)
 
-    def diag =
+    def diag: List[Relation] =
       for (i <- m1.indices.toList) yield m1(i)(i)
   }
 

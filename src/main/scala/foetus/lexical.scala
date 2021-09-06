@@ -1,5 +1,7 @@
 package foetus
 
+import scala.annotation.tailrec
+
 import foetus.calls._
 
 object lexical {
@@ -14,13 +16,14 @@ object lexical {
       }
   }
 
-  private def combine(in: List[Int]) =
+  private def combine(in: List[Int]): Seq[List[Int]] =
     for {
       len <- 1 to in.length
       comb <- in.combinations(len)
       combPerm <- comb.permutations
     } yield combPerm
 
+  @tailrec
   private def isDecreasing(rs: List[Relation]): Boolean = rs match {
     case Nil | `?` :: _ => false
     case `<` :: _       => true

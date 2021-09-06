@@ -1,7 +1,7 @@
 package sll.test.nameless
 
 /** A specialization of the SLL syntax: the maximal number of variables in the body a definition is
-  * 1. Variables in the rhs should be in the same order as in the lhs.
+  *   1. Variables in the rhs should be in the same order as in the lhs.
   */
 object Nameless1AST {
   sealed trait Val
